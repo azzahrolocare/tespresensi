@@ -321,6 +321,18 @@
 </div>
  
     <script>
+        // INISIALISASI DATABASE OFFLINE
+        const dbName = "PresensiOfflineDB";
+        let db;
+        const requestDB = indexedDB.open(dbName, 1);
+        requestDB.onupgradeneeded = (e) => {
+            db = e.target.result;
+            if (!db.objectStoreNames.contains("antrean")) {
+                db.createObjectStore("antrean", { autoIncrement: true });
+            }
+        };
+        requestDB.onsuccess = (e) => { db = e.target.result; };
+
         function toggleFullscreen() {
             if (!document.fullscreenElement) {
                 document.documentElement.requestFullscreen().catch(err => console.log(err));
@@ -429,15 +441,20 @@
             toggleSettings();
         }
 
-        // LOGIKA KIRIM DATA
+        // FUNGSI PEMBANTU STATUS
+        function updateStatusUI(pesan, warna) {
+            const s = document.getElementById('status-kirim');
+            s.innerText = pesan;
+            s.style.backgroundColor = warna;
+            s.style.display = "block";
+            setTimeout(() => { s.style.display = "none"; s.style.backgroundColor = "var(--primary)"; isProcessing = false; detectedBarcodes.clear(); }, 2000);
+        }
+
+        // LOGIKA KIRIM DATA (OFFLINE SUPPORT)
         function sendPresence(nama) {
             const ketValue = document.getElementById('keterangan').value;
             if (!ketValue) {
-                const s = document.getElementById('status-kirim');
-                s.innerText = "✖ PILIH KETERANGAN DULU!";
-                s.style.backgroundColor = "#e74c3c";
-                s.style.display = "block";
-                setTimeout(() => { s.style.display = "none"; s.style.backgroundColor = "var(--primary)"; }, 2000);
+                updateStatusUI("✖ PILIH KETERANGAN DULU!", "#e74c3c");
                 isProcessing = false;
                 document.getElementById('selection-overlay').style.display = 'none';
                 return;
@@ -447,15 +464,46 @@
             const config = JSON.parse(localStorage.getItem('absensiConfig')) || { sound: 'notification/Notif01.mp3' };
             new Audio(rawURL + config.sound).play().catch(() => {});
             
-            fetch(`${scriptURL}?nama=${encodeURIComponent(nama)}&keterangan=${encodeURIComponent(ketValue)}`, { method: 'GET', mode: 'no-cors' });
-            
-            const s = document.getElementById('status-kirim');
-            s.innerText = "✔ TERKIRIM: " + nama;
-            s.style.display = "block";
+            const dataPresensi = { nama: nama, keterangan: ketValue };
+
+            if (navigator.onLine) {
+                fetch(`${scriptURL}?nama=${encodeURIComponent(nama)}&keterangan=${encodeURIComponent(ketValue)}`, { method: 'GET', mode: 'no-cors' })
+                .then(() => updateStatusUI("✔ TERKIRIM: " + nama, "var(--primary)"))
+                .catch(() => simpanKeOffline(dataPresensi));
+            } else {
+                simpanKeOffline(dataPresensi);
+            }
             
             document.getElementById('selection-overlay').style.display = 'none';
-            setTimeout(() => { s.style.display = "none"; isProcessing = false; detectedBarcodes.clear(); }, 2000);
         }
+
+        function simpanKeOffline(data) {
+            if (!db) return;
+            const transaction = db.transaction(["antrean"], "readwrite");
+            const store = transaction.objectStore("antrean");
+            store.add(data);
+            updateStatusUI("☁ OFFLINE: " + data.nama + " DISIMPAN", "#f39c12");
+        }
+
+        async function sinkronkanData() {
+            if (!db || !navigator.onLine) return;
+            const transaction = db.transaction(["antrean"], "readwrite");
+            const store = transaction.objectStore("antrean");
+            const request = store.getAll();
+
+            request.onsuccess = () => {
+                const dataAntrean = request.result;
+                if (dataAntrean.length > 0) {
+                    dataAntrean.forEach(item => {
+                        fetch(`${scriptURL}?nama=${encodeURIComponent(item.nama)}&keterangan=${encodeURIComponent(item.keterangan)}`, { method: 'GET', mode: 'no-cors' });
+                    });
+                    store.clear();
+                    updateStatusUI("🔄 DATA OFFLINE TERSINKRON!", "var(--primary)");
+                }
+            };
+        }
+
+        window.addEventListener('online', sinkronkanData);
 
         applySettings();
         const html5QrCode = new Html5Qrcode("reader");
@@ -466,7 +514,6 @@
 
             detectedBarcodes.add(decodedText.trim());
 
-            // Tunggu 300ms untuk menangkap barcode lain di sekitar kartu
             if (scanTimer) clearTimeout(scanTimer);
             scanTimer = setTimeout(() => {
                 const results = Array.from(detectedBarcodes);
@@ -517,35 +564,26 @@
     const tombolInstal = document.getElementById('btnInstalPop');
     const tombolBatal = document.getElementById('btnBatal');
 
-    // Menangkap event instalasi dari browser
     window.addEventListener('beforeinstallprompt', (e) => {
         e.preventDefault();
         promptInstalasi = e;
-        
-        // Munculkan pop-up (bisa diberi delay 2 detik agar tidak terlalu kaget)
         setTimeout(() => {
             popUp.style.display = 'flex';
         }, 2000);
     });
 
-    // Aksi saat tombol Instal di klik
     tombolInstal.addEventListener('click', async () => {
         if (!promptInstalasi) return;
-        
         popUp.style.display = 'none';
         promptInstalasi.prompt();
-        
         const { outcome } = await promptInstalasi.userChoice;
-        console.log(`User memilih: ${outcome}`);
         promptInstalasi = null;
     });
 
-    // Aksi saat tombol Batal di klik
     tombolBatal.addEventListener('click', () => {
         popUp.style.display = 'none';
     });
 
-    // Deteksi jika sudah terinstal
     window.addEventListener('appinstalled', () => {
         popUp.style.display = 'none';
     });
