@@ -601,6 +601,12 @@
       .then(() => console.log("SW Presensi Terdaftar!"))
       .catch(err => console.log("Gagal Daftar SW:", err));
   }
+
+// Meminta izin notifikasi saat aplikasi dibuka
+if ("Notification" in window) {
+    Notification.requestPermission();
+}
+    
 </script>
 </body>
 </html>
