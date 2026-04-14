@@ -478,12 +478,19 @@
         }
 
         function simpanKeOffline(data) {
-            if (!db) return;
-            const transaction = db.transaction(["antrean"], "readwrite");
-            const store = transaction.objectStore("antrean");
-            store.add(data);
-            updateStatusUI("☁ OFFLINE: " + data.nama + " DISIMPAN", "#f39c12");
-        }
+    if (!db) return;
+    const transaction = db.transaction(["antrean"], "readwrite");
+    const store = transaction.objectStore("antrean");
+    store.add(data);
+    updateStatusUI("☁ OFFLINE: " + data.nama + " DISIMPAN", "#f39c12");
+
+    // DAFTARKAN SYNC LATAR BELAKANG
+    if ('serviceWorker' in navigator && 'SyncManager' in window) {
+        navigator.serviceWorker.ready.then(registration => {
+            return registration.sync.register('sinkron-presensi');
+        }).catch(err => console.log("Sync gagal didaftarkan", err));
+    }
+}
 
         async function sinkronkanData() {
             if (!db || !navigator.onLine) return;
