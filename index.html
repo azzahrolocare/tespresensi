@@ -199,17 +199,15 @@
 
         #keterangan option[disabled] { display: none; }
 
-        /* LOGIKA UI ANTREAN */
+        /* CSS TAMBAHAN UNTUK ANTREAN */
         .btn-antrean-float {
             position: fixed; bottom: 20px; right: 20px; 
             background: #f39c12; color: white; border: none; 
             padding: 10px 18px; border-radius: 50px; cursor: pointer; 
             box-shadow: 0 4px 12px rgba(0,0,0,0.3); z-index: 99;
             font-weight: bold; font-size: 14px; display: flex; align-items: center; gap: 8px;
-            border: 2px solid white; transition: all 0.3s ease;
+            border: 2px solid white;
         }
-        .btn-antrean-float:active { transform: scale(0.9); }
-        
         #modal-antrean {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
             background: rgba(0,0,0,0.85); z-index: 20000; justify-content: center; align-items: center;
@@ -217,41 +215,31 @@
         .modal-content-antrean {
             background: var(--bg-card); width: 90%; max-width: 360px; border-radius: 20px; 
             padding: 20px; max-height: 80vh; overflow-y: auto; border: 2px solid var(--primary);
-            color: var(--text-main); position: relative;
+            color: var(--text-main);
         }
-        
-        /* Loading Spinner */
-        .spinner {
-            display: none; width: 18px; height: 18px; border: 3px solid rgba(255,255,255,0.3);
-            border-radius: 50%; border-top-color: #fff; animation: spin 1s ease-in-out infinite;
-            margin-right: 10px;
+        /* Loading Animation */
+        @keyframes pulse-loading {
+            0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; }
         }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        .loading-state { display: flex; align-items: center; justify-content: center; }
+        .loading-text { animation: pulse-loading 1s infinite; }
     </style>
 </head>
 <body data-theme="dark" onclick="toggleFullscreen()"> 
     <div id="status-kirim"></div>
     <div id="about-overlay" class="overlay-about" onclick="closeAbout()"></div>
 
-    <button class="btn-antrean-float" id="btn-float-antrean" onclick="bukaModalAntrean(event)">
+    <button class="btn-antrean-float" onclick="bukaModalAntrean(event)">
         📦 ANTREAN: <span id="label-jumlah-antrean">0</span>
     </button>
 
     <div id="modal-antrean" onclick="tutupModalAntrean()">
         <div class="modal-content-antrean" onclick="event.stopPropagation()">
             <h3 style="margin-top:0; color:var(--primary); text-align:center;">ANTREAN OFFLINE</h3>
-            <p style="font-size: 11px; text-align: center; opacity: 0.7; margin-top:-10px;">Data yang belum tersinkronisasi</p>
             <hr style="border:0; border-top:1px solid rgba(255,255,255,0.1); margin:15px 0;">
             <div id="daftar-item-antrean" style="margin-bottom:20px; max-height:300px; overflow-y:auto;">
                 </div>
             <div style="display:flex; gap:10px;">
-                <button onclick="kirimManual()" id="btn-kirim-manual" style="flex:2; background:var(--primary); color:white; border:none; padding:12px; border-radius:10px; font-weight:bold; cursor:pointer;">
-                    <div class="loading-state">
-                        <div id="spinner-sinkron" class="spinner"></div>
-                        <span id="text-btn-kirim">KIRIM SEKARANG</span>
-                    </div>
-                </button>
+                <button onclick="kirimManual()" id="btn-kirim-manual" style="flex:1; background:var(--primary); color:white; border:none; padding:12px; border-radius:10px; font-weight:bold; cursor:pointer;">KIRIM SEKARANG</button>
                 <button onclick="tutupModalAntrean()" id="btn-tutup-antrean" style="flex:1; background:#7f8c8d; color:white; border:none; padding:12px; border-radius:10px; font-weight:bold; cursor:pointer;">TUTUP</button>
             </div>
         </div>
@@ -361,17 +349,16 @@
     </div>
 
     <div id="pwa-popup" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 9999; align-items: center; justify-content: center;">
-    <div style="background: var(--bg-card); width: 85%; max-width: 320px; padding: 25px; border-radius: 20px; border: 2px solid var(--primary); text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.5);">
-        <img src="https://github.com/masrahmat-id/presensi-smp-smk-azzahro/raw/main/icon-apk-presensi-azzahro.png" style="width: 80px; height: 80px; margin-bottom: 15px; border-radius: 15px;">
-        <h3 style="margin: 0 0 10px 0; font-size: 1.1rem; color: var(--text-main);">Instal Aplikasi</h3>
-        <p style="font-size: 0.9rem; color: #ccc; margin-bottom: 20px;">Pasang Aplikasi Presensi Digital Az-Zahro di layar utama Anda untuk akses lebih cepat.</p>
-        
-        <div style="display: flex; gap: 10px;">
-            <button id="btnBatal" style="flex: 1; background: transparent; color: #999; border: 1px solid #444; padding: 10px; border-radius: 10px; font-weight: bold; cursor: pointer;">Nanti</button>
-            <button id="btnInstalPop" style="flex: 1; background: var(--primary); color: white; border: none; padding: 10px; border-radius: 10px; font-weight: bold; cursor: pointer;">Instal</button>
+        <div style="background: var(--bg-card); width: 85%; max-width: 320px; padding: 25px; border-radius: 20px; border: 2px solid var(--primary); text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.5);">
+            <img src="https://github.com/masrahmat-id/presensi-smp-smk-azzahro/raw/main/icon-apk-presensi-azzahro.png" style="width: 80px; height: 80px; margin-bottom: 15px; border-radius: 15px;">
+            <h3 style="margin: 0 0 10px 0; font-size: 1.1rem; color: var(--text-main);">Instal Aplikasi</h3>
+            <p style="font-size: 0.9rem; color: #ccc; margin-bottom: 20px;">Pasang Aplikasi Presensi Digital Az-Zahro di layar utama Anda untuk akses lebih cepat.</p>
+            <div style="display: flex; gap: 10px;">
+                <button id="btnBatal" style="flex: 1; background: transparent; color: #999; border: 1px solid #444; padding: 10px; border-radius: 10px; font-weight: bold; cursor: pointer;">Nanti</button>
+                <button id="btnInstalPop" style="flex: 1; background: var(--primary); color: white; border: none; padding: 10px; border-radius: 10px; font-weight: bold; cursor: pointer;">Instal</button>
+            </div>
         </div>
     </div>
-</div>
  
     <script>
         // INISIALISASI DATABASE OFFLINE
@@ -497,7 +484,6 @@
             toggleSettings();
         }
 
-        // FUNGSI PEMBANTU STATUS
         function updateStatusUI(pesan, warna) {
             const s = document.getElementById('status-kirim');
             s.innerText = pesan;
@@ -506,18 +492,14 @@
             setTimeout(() => { s.style.display = "none"; s.style.backgroundColor = "var(--primary)"; isProcessing = false; detectedBarcodes.clear(); }, 2000);
         }
 
-        // --- LOGIKA HITUNG MUNDUR & LOADING ---
-        
+        // LOGIKA ANTREAN & SINKRONISASI MANUAL
         function updateJumlahAntreanBadge() {
             if (!db) return;
             const transaction = db.transaction(["antrean"], "readonly");
             const store = transaction.objectStore("antrean");
             const req = store.count();
             req.onsuccess = () => {
-                const jumlah = req.result;
-                document.getElementById('label-jumlah-antrean').innerText = jumlah;
-                // Sembunyikan tombol float jika antrean kosong agar rapi
-                document.getElementById('btn-float-antrean').style.display = (jumlah > 0) ? 'flex' : 'none';
+                document.getElementById('label-jumlah-antrean').innerText = req.result;
             };
         }
 
@@ -535,7 +517,7 @@
             req.onsuccess = function() {
                 const items = req.result;
                 if (items.length === 0) {
-                    container.innerHTML = "<p style='color:#999; text-align:center;'>Antrean kosong.</p>";
+                    container.innerHTML = "<p style='color:#999; text-align:center;'>Tidak ada data offline.</p>";
                     document.getElementById('btn-kirim-manual').disabled = true;
                     document.getElementById('btn-kirim-manual').style.opacity = "0.5";
                     return;
@@ -555,22 +537,35 @@
             document.getElementById('modal-antrean').style.display = 'none';
         }
 
+        // LOGIKA KIRIM MANUAL (COUNTDOWN + LOADING + DELETE DATA)
         async function kirimManual() {
+            const btn = document.getElementById('btn-kirim-manual');
+            const btnTutup = document.getElementById('btn-tutup-antrean');
+            const container = document.getElementById('daftar-item-antrean');
+            
             if (!navigator.onLine) {
-                alert("Anda sedang offline. Tidak bisa mengirim data sekarang.");
+                alert("Anda sedang offline. Tidak dapat mengirim data!");
                 return;
             }
 
-            const btn = document.getElementById('btn-kirim-manual');
-            const spinner = document.getElementById('spinner-sinkron');
-            const textBtn = document.getElementById('text-btn-kirim');
-            const btnTutup = document.getElementById('btn-tutup-antrean');
+            // HITUNG MUNDUR SEBELUM PROSES
+            let countdown = 3;
+            btnTutup.style.display = 'none'; // Sembunyikan tombol tutup agar tidak terganggu
+            
+            const timer = setInterval(() => {
+                btn.innerText = `MENGIRIM DALAM ${countdown}...`;
+                countdown--;
+                if (countdown < 0) {
+                    clearInterval(timer);
+                    prosesSinkronisasi(btn, container, btnTutup);
+                }
+            }, 1000);
+        }
 
-            // Aktifkan Loading
+        async function prosesSinkronisasi(btn, container, btnTutup) {
+            btn.classList.add('loading-text');
+            btn.innerText = "SINKRONISASI...";
             btn.disabled = true;
-            btnTutup.disabled = true;
-            spinner.style.display = 'block';
-            textBtn.innerText = "MENGIRIM DATA...";
 
             const transaction = db.transaction(["antrean"], "readwrite");
             const store = transaction.objectStore("antrean");
@@ -579,42 +574,32 @@
             request.onsuccess = async () => {
                 const dataAntrean = request.result;
                 if (dataAntrean.length > 0) {
-                    let terkirimCount = 0;
-                    
+                    // Kirim satu per satu
                     for (const item of dataAntrean) {
                         try {
-                            // Simulasi kirim data satu per satu
                             await fetch(`${scriptURL}?nama=${encodeURIComponent(item.nama)}&keterangan=${encodeURIComponent(item.keterangan)}`, { method: 'GET', mode: 'no-cors' });
-                            terkirimCount++;
-                            
-                            // Hitung Mundur Real-time di UI
-                            const sisa = dataAntrean.length - terkirimCount;
-                            textBtn.innerText = `SISA: ${sisa} DATA...`;
-                            document.getElementById('label-jumlah-antrean').innerText = sisa;
-                        } catch (err) {
-                            console.error("Gagal mengirim satu item:", err);
-                        }
+                        } catch (err) { console.error("Gagal kirim item:", item.nama); }
                     }
                     
-                    // Bersihkan Database setelah semua terkirim
-                    store.clear();
-                    transaction.oncomplete = () => {
+                    // Hapus data yang sudah terkirim
+                    const clearRequest = store.clear();
+                    clearRequest.onsuccess = () => {
                         updateJumlahAntreanBadge();
-                        updateStatusUI("🔄 DATA OFFLINE BERHASIL DISINKRON!", "var(--primary)");
-                        
-                        // Kembalikan UI
-                        spinner.style.display = 'none';
-                        textBtn.innerText = "KIRIM SEKARANG";
+                        btn.classList.remove('loading-text');
+                        btn.innerText = "KIRIM SEKARANG";
                         btn.disabled = false;
-                        btnTutup.disabled = false;
-                        tutupModalAntrean();
+                        btnTutup.style.display = 'block';
+                        
+                        updateStatusUI("🔄 DATA OFFLINE TERSINKRON!", "var(--primary)");
+                        container.innerHTML = "<p style='color:#2ecc71; text-align:center;'>✅ Semua data berhasil terkirim.</p>";
+                        
+                        setTimeout(() => tutupModalAntrean(), 1500);
                     };
                 }
             };
         }
 
-        // --- END LOGIKA HITUNG MUNDUR ---
-
+        // FUNGSI SEND PRESENCE LAMA
         function sendPresence(nama) {
             const ketValue = document.getElementById('keterangan').value;
             if (!ketValue) {
@@ -646,9 +631,6 @@
 
         function simpanKeOffline(data) {
             if (!db) return;
-            const config = JSON.parse(localStorage.getItem('absensiConfig')) || { sound: 'notification/Notif01.mp3' };
-            new Audio(rawURL + config.sound).play().catch(err => console.log("Gagal putar suara:", err));
-
             const transaction = db.transaction(["antrean"], "readwrite");
             const store = transaction.objectStore("antrean");
             store.add(data);
@@ -659,10 +641,18 @@
             };
         }
 
-        // Sinkronisasi otomatis saat kembali online
+        // Sinkronisasi otomatis saat online kembali
         window.addEventListener('online', () => {
-            updateStatusUI("🌐 KEMBALI ONLINE!", "var(--primary)");
-            updateJumlahAntreanBadge();
+            if (db) {
+                const transaction = db.transaction(["antrean"], "readwrite");
+                const store = transaction.objectStore("antrean");
+                const req = store.count();
+                req.onsuccess = () => {
+                    if (req.result > 0) {
+                        updateStatusUI("🌐 KEMBALI ONLINE. SILAKAN KIRIM ANTREAN!", "#3498db");
+                    }
+                };
+            }
         });
 
         applySettings();
@@ -670,18 +660,14 @@
 
         function handleScan(decodedText) {
             if (isProcessing) return;
-
             detectedBarcodes.add(decodedText.trim());
-
             if (scanTimer) clearTimeout(scanTimer);
             scanTimer = setTimeout(() => {
                 const results = Array.from(detectedBarcodes);
-                
                 if (results.length > 1) {
                     isProcessing = true;
                     const overlay = document.getElementById('selection-overlay');
                     overlay.innerHTML = '<p style="color:white; font-size:12px; font-weight:bold; margin-bottom:10px;">TERDETEKSI ' + results.length + ' BARCODE. PILIH NAMA:</p>';
-                    
                     results.forEach(nama => {
                         const btn = document.createElement('div');
                         btn.className = 'barcode-option';
@@ -689,19 +675,11 @@
                         btn.onclick = (e) => { e.stopPropagation(); sendPresence(nama); };
                         overlay.appendChild(btn);
                     });
-
                     const btnBatal = document.createElement('div');
-                    btnBatal.className = 'barcode-option';
-                    btnBatal.style.background = '#7f8c8d';
+                    btnBatal.className = 'barcode-option'; btnBatal.style.background = '#7f8c8d';
                     btnBatal.innerText = 'BATAL SCAN ULANG';
-                    btnBatal.onclick = (e) => { 
-                        e.stopPropagation();
-                        overlay.style.display = 'none'; 
-                        isProcessing = false; 
-                        detectedBarcodes.clear();
-                    };
+                    btnBatal.onclick = (e) => { e.stopPropagation(); overlay.style.display = 'none'; isProcessing = false; detectedBarcodes.clear(); };
                     overlay.appendChild(btnBatal);
-                    
                     overlay.style.display = 'flex';
                 } else if (results.length === 1) {
                     isProcessing = true;
@@ -717,46 +695,35 @@
         ).catch(err => console.error(err));
     </script>
 
-<script>
-    let promptInstalasi;
-    const popUp = document.getElementById('pwa-popup');
-    const tombolInstal = document.getElementById('btnInstalPop');
-    const tombolBatal = document.getElementById('btnBatal');
-
-    window.addEventListener('beforeinstallprompt', (e) => {
-        e.preventDefault();
-        promptInstalasi = e;
-        setTimeout(() => {
-            popUp.style.display = 'flex';
-        }, 2000);
-    });
-
-    tombolInstal.addEventListener('click', async () => {
-        if (!promptInstalasi) return;
-        popUp.style.display = 'none';
-        promptInstalasi.prompt();
-        const { outcome } = await promptInstalasi.userChoice;
-        promptInstalasi = null;
-    });
-
-    tombolBatal.addEventListener('click', () => {
-        popUp.style.display = 'none';
-    });
-
-    window.addEventListener('appinstalled', () => {
-        popUp.style.display = 'none';
-    });
-</script>    
     <script>
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./sw.js')
-      .then(() => console.log("SW Presensi Terdaftar!"))
-      .catch(err => console.log("Gagal Daftar SW:", err));
-  }
+        let promptInstalasi;
+        const popUp = document.getElementById('pwa-popup');
+        const tombolInstal = document.getElementById('btnInstalPop');
+        const tombolBatal = document.getElementById('btnBatal');
 
-if ("Notification" in window) {
-    Notification.requestPermission();
-}
-</script>
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            promptInstalasi = e;
+            setTimeout(() => { popUp.style.display = 'flex'; }, 2000);
+        });
+
+        tombolInstal.addEventListener('click', async () => {
+            if (!promptInstalasi) return;
+            popUp.style.display = 'none';
+            promptInstalasi.prompt();
+            await promptInstalasi.userChoice;
+            promptInstalasi = null;
+        });
+
+        tombolBatal.addEventListener('click', () => { popUp.style.display = 'none'; });
+    </script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('./sw.js')
+                .then(() => console.log("SW Presensi Terdaftar!"))
+                .catch(err => console.log("Gagal Daftar SW:", err));
+        }
+        if ("Notification" in window) { Notification.requestPermission(); }
+    </script>
 </body>
 </html>
