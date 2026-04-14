@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Pusat Game Offline</title>
+    
+    <link rel="manifest" href="./manifest.json">
+    <meta name="theme-color" content="#0f172a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+    <style>
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
+        
+        body, html {
+            margin: 0; padding: 0; 
+            width: 100vw; 
+            height: 100vh; 
+            overflow: hidden; 
+            background: #0f172a; 
+            font-family: 'Segoe UI', sans-serif; 
+            color: #fff;
+            padding-top: env(safe-area-inset-top);
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+
+        #main-container {
+            width: 100%; 
+            height: 100%; 
+            display: flex; 
+            flex-direction: column;
+            align-items: center; 
+            justify-content: center;
+            position: fixed;
+            top: 0; left: 0;
+        }
+
+        h1 { font-size: 24px; color: #38bdf8; margin: 0 0 10px 0; }
+        .menu-selection { margin-bottom: 15px; display: flex; gap: 10px; }
+        select { padding: 8px; border-radius: 5px; background: #1e293b; color: white; border: 1px solid #38bdf8; cursor: pointer; }
+
+        #game-menu { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 20px; }
+        .menu-card { background: #1e293b; padding: 20px; border-radius: 15px; text-align: center; cursor: pointer; border: 2px solid transparent; transition: 0.3s; }
+        .menu-card:active { border-color: #38bdf8; transform: scale(0.95); }
+        .menu-card span { font-size: 40px; display: block; margin-bottom: 10px; }
+
+        .game-screen { display: none; flex-direction: column; align-items: center; width: 100%; height: 100%; justify-content: center; overflow-y: auto; padding: 20px 0; }
+        .active { display: flex; }
+
+        .board { 
+            display: grid; grid-template-columns: repeat(3, 85px); grid-template-rows: repeat(3, 85px); 
+            gap: 10px; background: #1e293b; padding: 15px; border-radius: 15px; position: relative; box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        }
+        .cell { background: #334155; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 35px; font-weight: bold; cursor: pointer; }
+        .cell.x-color { color: #38bdf8; }
+        .cell.o-color { color: #fb7185; }
+        #winning-line { position: absolute; background: #f43f5e; display: none; z-index: 10; border-radius: 10px; box-shadow: 0 0 15px #f43f5e; pointer-events: none; }
+
+        canvas { background: #1e293b; border-radius: 15px; border: 2px solid #334155; max-width: 90vw; max-height: 45vh; }
+
+        .snake-controls { display: grid; grid-template-columns: repeat(3, 60px); grid-template-rows: repeat(2, 60px); gap: 10px; margin-top: 15px; }
+        .ctrl-btn { background: #334155; border: 2px solid #38bdf8; color: white; border-radius: 12px; font-size: 24px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+        .ctrl-btn:active { background: #38bdf8; color: #0f172a; }
+        .up { grid-column: 2; }
+        .left { grid-column: 1; grid-row: 2; }
+        .down { grid-column: 2; grid-row: 2; }
+        .right { grid-column: 3; grid-row: 2; }
+
+        .math-box { background: #1e293b; padding: 30px; border-radius: 15px; text-align: center; border: 2px solid #38bdf8; width: 80%; max-width: 300px; }
+        #math-q { font-size: 40px; margin-bottom: 20px; }
+        #math-ans { width: 100%; padding: 10px; font-size: 24px; border-radius: 8px; border: none; text-align: center; background: #334155; color: white; }
+        #math-lives, #mole-lives { color: #fb7185; font-weight: bold; font-size: 18px; margin-bottom: 10px; }
+
+        .status { margin-top: 10px; font-size: 16px; color: #94a3b8; height: 20px; }
+        .btn-group { margin-top: 15px; display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+        button { padding: 10px 15px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .btn-back { background: #ef4444; color: white; width: 200px; margin-top: 10px; }
+        .btn-reset { background: #334155; color: white; }
+        .btn-start { background: #10b981; color: white; font-size: 18px; padding: 15px 30px; }
+
+        /* CSS TAMBAHAN UNTUK MODAL */
+        #custom-alert {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(5px);
+        }
+        .modal-content {
+            background: #1e293b;
+            padding: 30px;
+            border-radius: 20px;
+            border: 2px solid #38bdf8;
+            text-align: center;
+            width: 85%;
+            max-width: 320px;
+            box-shadow: 0 0 30px rgba(56, 189, 248, 0.2);
+        }
+        .modal-btn {
+            background: #38bdf8;
+            color: #0f172a;
+            width: 100%;
+            margin-top: 20px;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="main-container">
+        <div id="custom-alert">
+            <div class="modal-content">
+                <h2 style="color: #fb7185; margin: 0 0 10px 0;">GAME OVER!</h2>
+                <p id="modal-message" style="font-size: 18px; line-height: 1.5;"></p>
+                <button class="modal-btn" onclick="closeModal()">OKE</button>
+            </div>
+        </div>
+        
+        <div id="game-menu" class="active game-screen" style="display: grid;">
+            <h1 style="grid-column: span 2; text-align: center;">OFFLINE GAMES</h1>
+            <div class="menu-card" onclick="showGame('ttt')"><span>❌⭕</span>Tic Tac Toe</div>
+            <div class="menu-card" onclick="showGame('snake')"><span>🐍</span>Snake</div>
+            <div class="menu-card" onclick="showGame('math')"><span>➕</span>Math Quiz</div>
+            <div class="menu-card" onclick="showGame('mole')"><span>🐰</span>Whack Rabbit</div>
+            <button class="btn-reset" style="grid-column: span 2; margin-top: 10px;" onclick="window.location.reload()">Cek Koneksi</button>
+        </div>
+
+        <div id="screen-ttt" class="game-screen">
+            <h1>TIC TAC TOE</h1>
+            <div class="menu-selection">
+                <label>Level: </label>
+                <select id="difficulty" onchange="resetGame()">
+                    <option value="easy" selected>Mudah</option>
+                    <option value="medium">Sedang</option>
+                    <option value="hard">Sulit</option>
+                    <option value="impossible">Mustahil 😂</option>
+                </select>
+            </div>
+            <div class="board" id="board">
+                <div id="winning-line"></div>
+                <div class="cell" onclick="makeMove(0)"></div><div class="cell" onclick="makeMove(1)"></div><div class="cell" onclick="makeMove(2)"></div>
+                <div class="cell" onclick="makeMove(3)"></div><div class="cell" onclick="makeMove(4)"></div><div class="cell" onclick="makeMove(5)"></div>
+                <div class="cell" onclick="makeMove(6)"></div><div class="cell" onclick="makeMove(7)"></div><div class="cell" onclick="makeMove(8)"></div>
+            </div>
+            <div class="status" id="status">Giliran Kamu</div>
+            <div class="btn-group">
+                <button class="btn-reset" onclick="resetGame()">Ulang</button>
+                <button class="btn-back" onclick="goToMenu()">Menu Utama</button>
+            </div>
+        </div>
+
+        <div id="screen-snake" class="game-screen">
+            <h1>SNAKE</h1>
+            <div class="menu-selection">
+                <label>Kecepatan: </label>
+                <select id="snake-level" onchange="initSnake()">
+                    <option value="200">Santai</option>
+                    <option value="150" selected>Normal</option>
+                    <option value="80">Cepat</option>
+                    <option value="40">Kilat!</option>
+                </select>
+            </div>
+            <canvas id="snakeCanvas" width="400" height="400"></canvas>
+            <div id="snake-controls-ui" class="snake-controls" style="display: none;">
+                <div class="ctrl-btn up" onclick="changeSnakeDir('UP')">▲</div>
+                <div class="ctrl-btn left" onclick="changeSnakeDir('LEFT')">◀</div>
+                <div class="ctrl-btn down" onclick="changeSnakeDir('DOWN')">▼</div>
+                <div class="ctrl-btn right" onclick="changeSnakeDir('RIGHT')">▶</div>
+            </div>
+            <div id="snake-ui-start" style="margin-top: 15px;">
+                <button id="btn-start-snake" class="btn-start" onclick="startSnakeLoop()">MULAI GAME</button>
+            </div>
+            <div class="status" id="snake-status">Skor: 0</div>
+            <button class="btn-back" onclick="goToMenu()">Menu Utama</button>
+        </div>
+
+        <div id="screen-math" class="game-screen">
+            <h1>MATH QUIZ</h1>
+            <div class="menu-selection">
+                <label>Tingkat: </label>
+                <select id="math-level" onchange="resetMath()">
+                    <option value="10" selected>Mudah</option>
+                    <option value="50">Sedang</option>
+                    <option value="200">Sulit</option>
+                </select>
+            </div>
+            <div id="math-lives">❤️❤️❤️❤️❤️</div>
+            <div class="math-box">
+                <div id="math-q">? + ?</div>
+                <input type="number" id="math-ans" placeholder="Jawaban">
+            </div>
+            <div class="status" id="math-status">Skor: 0</div>
+            <button class="btn-back" onclick="goToMenu()">Menu Utama</button>
+        </div>
+
+        <div id="screen-mole" class="game-screen">
+            <h1>WHACK A RABBIT</h1>
+            <div class="menu-selection">
+                <label>Level: </label>
+                <select id="mole-level" onchange="initMole()">
+                    <option value="easy" selected>Mudah</option>
+                    <option value="medium">Sedang</option>
+                    <option value="hard">Sulit</option>
+                </select>
+            </div>
+            <div id="mole-lives">❤️❤️❤️❤️❤️</div>
+            <canvas id="moleCanvas" width="300" height="300"></canvas>
+            <div class="status" id="mole-status">Skor: 0</div>
+            <button class="btn-back" onclick="goToMenu()">Menu Utama</button>
+        </div>
+
+    </div>
+
+    <script>
+        /* --- LOGIKA CUSTOM MODAL --- */
+        let modalActive = false;
+        function showCustomAlert(msg) {
+            document.getElementById('modal-message').innerText = msg;
+            document.getElementById('custom-alert').style.display = 'flex';
+            modalActive = true;
+        }
+        function closeModal() {
+            document.getElementById('custom-alert').style.display = 'none';
+            modalActive = false;
+        }
+
+        /* --- AUTO FULLSCREEN LOGIC --- */
+        function activateFullScreen() {
+            const docElm = document.documentElement;
+            if (docElm.requestFullscreen) { docElm.requestFullscreen(); } 
+            else if (docElm.webkitRequestFullscreen) { docElm.webkitRequestFullscreen(); } 
+            else if (docElm.msRequestFullscreen) { docElm.msRequestFullscreen(); }
+        }
+
+        /* --- NAVIGASI --- */
+        function showGame(id) {
+            activateFullScreen();
+            document.querySelectorAll('.game-screen').forEach(s => { s.classList.remove('active'); s.style.display = 'none'; });
+            const target = document.getElementById('screen-' + id);
+            target.classList.add('active');
+            target.style.display = 'flex';
+            document.getElementById('game-menu').style.display = 'none';
+
+            if(id === 'snake') initSnake();
+            if(id === 'math') resetMath();
+            if(id === 'mole') initMole();
+        }
+
+        function goToMenu() { location.reload(); }
+
+        /* --- 1. LOGIKA TIC TAC TOE --- */
+        let tttBoard = ["", "", "", "", "", "", "", "", ""];
+        let huPlayer = "X"; let aiPlayer = "O"; let gameActive = true;
+        const winConditions = [[0,1,2], [3,4,5], [6,7,8], [0,3,6], [1,4,7], [2,5,8], [0,4,8], [2,4,6]];
+        const lineStyles = [[50,15,280,6,0], [152,15,280,6,0], [254,15,280,6,0], [15,50,6,280,0], [15,152,6,280,0], [15,254,6,280,0], [25,25,370,6,45], [25,285,370,6,135]];
+
+        function makeMove(idx) {
+            if (tttBoard[idx] === "" && gameActive) {
+                tttBoard[idx] = huPlayer; updateDisplay();
+                if (!checkWin(tttBoard, huPlayer) && !checkTie()) { setTimeout(aiMove, 400); } 
+                else { checkGameStatus(); }
+            }
+        }
+        function aiMove() {
+            const diff = document.getElementById('difficulty').value;
+            let move; let rand = Math.random();
+            if (diff === "easy") move = randomMove();
+            else if (diff === "medium") move = (rand < 0.5) ? minimax(tttBoard, aiPlayer).index : randomMove();
+            else if (diff === "hard") move = (rand < 0.9) ? minimax(tttBoard, aiPlayer).index : randomMove();
+            else move = minimax(tttBoard, aiPlayer).index;
+            tttBoard[move] = aiPlayer; updateDisplay(); checkGameStatus();
+        }
+        function randomMove() {
+            let avail = tttBoard.map((v, i) => v === "" ? i : null).filter(v => v !== null);
+            return avail[Math.floor(Math.random() * avail.length)];
+        }
+        function minimax(newBoard, player) {
+            let availSpots = newBoard.map((v, i) => v === "" ? i : null).filter(v => v !== null);
+            if (checkWin(newBoard, huPlayer)) return {score: -10};
+            if (checkWin(newBoard, aiPlayer)) return {score: 10};
+            if (availSpots.length === 0) return {score: 0};
+            let moves = [];
+            for (let i = 0; i < availSpots.length; i++) {
+                let move = {}; move.index = availSpots[i];
+                newBoard[availSpots[i]] = player;
+                if (player === aiPlayer) move.score = minimax(newBoard, huPlayer).score;
+                else move.score = minimax(newBoard, aiPlayer).score;
+                newBoard[availSpots[i]] = ""; moves.push(move);
+            }
+            let bestMove;
+            if (player === aiPlayer) {
+                let bestScore = -Infinity;
+                for (let i = 0; i < moves.length; i++) { if (moves[i].score > bestScore) { bestScore = moves[i].score; bestMove = i; } }
+            } else {
+                let bestScore = Infinity;
+                for (let i = 0; i < moves.length; i++) { if (moves[i].score < bestScore) { bestScore = moves[i].score; bestMove = i; } }
+            }
+            return moves[bestMove];
+        }
+        function checkWin(b, p) {
+            for (let i = 0; i < winConditions.length; i++) {
+                if (b[winConditions[i][0]] === p && b[winConditions[i][1]] === p && b[winConditions[i][2]] === p) return {index: i, player: p};
+            }
+            return null;
+        }
+        function checkTie() { return tttBoard.filter(s => s === "").length === 0; }
+        function checkGameStatus() {
+            let win = checkWin(tttBoard, huPlayer) || checkWin(tttBoard, aiPlayer);
+            if (win) {
+                document.getElementById('status').innerText = win.player === "X" ? "Kamu Menang!" : "Komputer Menang!";
+                const line = document.getElementById('winning-line');
+                const [top, left, w, h, deg] = lineStyles[win.index];
+                line.style.top = top+"px"; line.style.left = left+"px"; line.style.width = w+"px"; line.style.height = h+"px";
+                line.style.transform = `rotate(${deg}deg)`; line.style.transformOrigin = "top left"; line.style.display = "block";
+                gameActive = false;
+            } else if (checkTie()) {
+                document.getElementById('status').innerText = "Seri!"; gameActive = false;
+            }
+        }
+        function updateDisplay() {
+            const cells = document.querySelectorAll('#screen-ttt .cell');
+            tttBoard.forEach((val, i) => {
+                cells[i].innerText = val;
+                cells[i].className = val === "X" ? "cell x-color" : (val === "O" ? "cell o-color" : "cell");
+            });
+        }
+        function resetGame() {
+            tttBoard = ["", "", "", "", "", "", "", "", ""];
+            gameActive = true; document.getElementById('winning-line').style.display = "none";
+            document.getElementById('status').innerText = "Giliran Kamu"; updateDisplay();
+        }
+
+        /* --- 2. LOGIKA SNAKE --- */
+        let snake, food, snakeDir, snakeScore, snakeLoop;
+        function changeSnakeDir(newDir) {
+            if(newDir === "UP" && snakeDir !== "DOWN") snakeDir = "UP";
+            if(newDir === "DOWN" && snakeDir !== "UP") snakeDir = "DOWN";
+            if(newDir === "LEFT" && snakeDir !== "RIGHT") snakeDir = "LEFT";
+            if(newDir === "RIGHT" && snakeDir !== "LEFT") snakeDir = "RIGHT";
+        }
+        function initSnake() {
+            clearInterval(snakeLoop);
+            const canvas = document.getElementById('snakeCanvas');
+            const ctx = canvas.getContext('2d');
+            const box = 20;
+            snake = [{x: 10*box, y: 10*box}]; food = {x: 5*box, y: 5*box};
+            snakeDir = "RIGHT"; snakeScore = 0;
+            document.getElementById('btn-start-snake').style.display = "inline-block";
+            document.getElementById('snake-controls-ui').style.display = "none";
+            document.getElementById('snake-status').innerText = "Klik Mulai untuk bermain";
+            ctx.fillStyle = "#1e293b"; ctx.fillRect(0,0,400,400);
+            ctx.fillStyle = "#38bdf8"; ctx.fillRect(snake[0].x, snake[0].y, box-1, box-1);
+        }
+        function startSnakeLoop() {
+            document.getElementById('btn-start-snake').style.display = "none";
+            document.getElementById('snake-controls-ui').style.display = "grid";
+            const canvas = document.getElementById('snakeCanvas');
+            const ctx = canvas.getContext('2d');
+            const box = 20;
+            const speed = parseInt(document.getElementById('snake-level').value);
+            document.onkeydown = (e) => {
+                if(e.key === "ArrowUp") changeSnakeDir("UP");
+                if(e.key === "ArrowDown") changeSnakeDir("DOWN");
+                if(e.key === "ArrowLeft") changeSnakeDir("LEFT");
+                if(e.key === "ArrowRight") changeSnakeDir("RIGHT");
+            };
+            snakeLoop = setInterval(() => {
+                if(modalActive) return; // Jeda jika modal muncul
+                ctx.fillStyle = "#1e293b"; ctx.fillRect(0,0,400,400);
+                for(let i=0; i<snake.length; i++) {
+                    ctx.fillStyle = i==0 ? "#38bdf8" : "#94a3b8";
+                    ctx.fillRect(snake[i].x, snake[i].y, box-1, box-1);
+                }
+                ctx.fillStyle = "#fb7185"; ctx.fillRect(food.x, food.y, box-1, box-1);
+                let headX = snake[0].x; let headY = snake[0].y;
+                if(snakeDir === "UP") headY -= box;
+                if(snakeDir === "DOWN") headY += box;
+                if(snakeDir === "LEFT") headX -= box;
+                if(snakeDir === "RIGHT") headX += box;
+                if(headX === food.x && headY === food.y) {
+                    snakeScore++; document.getElementById('snake-status').innerText = "Skor: " + snakeScore;
+                    food = {x: Math.floor(Math.random()*19)*box, y: Math.floor(Math.random()*19)*box};
+                } else snake.pop();
+                let newHead = {x: headX, y: headY};
+                if(headX<0||headX>=400||headY<0||headY>=400||snake.some(s=>s.x==newHead.x&&s.y==newHead.y)) {
+                    clearInterval(snakeLoop); 
+                    showCustomAlert("Game Over! Skor Kamu: " + snakeScore); 
+                    initSnake(); 
+                    return;
+                }
+                snake.unshift(newHead);
+            }, speed);
+        }
+
+        /* --- 3. LOGIKA MATH QUIZ --- */
+        let mathAns, mathScore = 0, mathLives = 5;
+        function resetMath() {
+            mathScore = 0; mathLives = 5;
+            document.getElementById('math-status').innerText = "Skor: 0";
+            updateMathLives(); nextMath();
+        }
+        function updateMathLives() {
+            let hearts = "";
+            for(let i=0; i<mathLives; i++) hearts += "❤️";
+            document.getElementById('math-lives').innerText = hearts || "GAME OVER";
+        }
+        function nextMath() {
+            const level = parseInt(document.getElementById('math-level').value);
+            const ops = ['+', '-', '*', '/'];
+            const op = ops[Math.floor(Math.random() * ops.length)];
+            let a, b;
+            if (op === '+') { a = Math.floor(Math.random() * level); b = Math.floor(Math.random() * level); mathAns = a + b; }
+            else if (op === '-') { a = Math.floor(Math.random() * level) + level; b = Math.floor(Math.random() * level); mathAns = a - b; }
+            else if (op === '*') { a = Math.floor(Math.random() * (level/5)) + 1; b = Math.floor(Math.random() * 10) + 1; mathAns = a * b; }
+            else if (op === '/') { mathAns = Math.floor(Math.random() * 10) + 1; b = Math.floor(Math.random() * 10) + 1; a = mathAns * b; }
+            document.getElementById('math-q').innerText = `${a} ${op === '*' ? '×' : op === '/' ? '÷' : op} ${b}`;
+            document.getElementById('math-ans').value = ""; document.getElementById('math-ans').focus();
+        }
+        document.getElementById('math-ans').oninput = function() {
+            if(this.value.length >= mathAns.toString().length) {
+               if(parseInt(this.value) === mathAns) {
+                   mathScore++; document.getElementById('math-status').innerText = "Skor: " + mathScore; nextMath();
+               } else {
+                   mathLives--; updateMathLives();
+                   if(mathLives <= 0) { 
+                       showCustomAlert("Game Over! Skor Akhir: " + mathScore); 
+                       resetMath(); 
+                   } 
+                   else { nextMath(); }
+               }
+            }
+        };
+
+        /* --- 4. LOGIKA WHACK A RABBIT --- */
+        let rabbitIdx, carrotIndices = [], moleScore, moleLives, moleLoop;
+
+        function updateMoleLivesDisplay() {
+            let hearts = "";
+            for(let i=0; i<moleLives; i++) hearts += "❤️";
+            document.getElementById('mole-lives').innerText = hearts || "GAME OVER";
+        }
+
+        function initMole() {
+            clearInterval(moleLoop); 
+            moleScore = 0; 
+            moleLives = 5;
+            rabbitIdx = -1;
+            carrotIndices = [];
+            document.getElementById('mole-status').innerText = "Skor: 0";
+            updateMoleLivesDisplay();
+
+            const canvas = document.getElementById('moleCanvas');
+            const ctx = canvas.getContext('2d');
+            
+            canvas.onclick = (e) => {
+                if(modalActive) return;
+                const rect = canvas.getBoundingClientRect();
+                const x = (e.clientX - rect.left) * (canvas.width / rect.width);
+                const y = (e.clientY - rect.top) * (canvas.height / rect.height);
+                const col = Math.floor(x/100); const row = Math.floor(y/100);
+                const clickedIdx = row*3 + col;
+
+                if(clickedIdx === rabbitIdx) { 
+                    moleScore++; 
+                    document.getElementById('mole-status').innerText = "Skor: " + moleScore; 
+                    rabbitIdx = -1; 
+                    drawMole(); 
+                } else if (carrotIndices.includes(clickedIdx)) {
+                    moleLives--;
+                    updateMoleLivesDisplay();
+                    carrotIndices = carrotIndices.filter(i => i !== clickedIdx);
+                    drawMole();
+                    if(moleLives <= 0) {
+                        showCustomAlert("Yah! Kamu memukul wortel. Skor Akhir: " + moleScore);
+                        initMole();
+                    }
+                }
+            };
+
+            function drawMole() {
+                ctx.fillStyle = "#1e293b"; ctx.fillRect(0,0,300,300);
+                for(let i=0; i<9; i++) {
+                    ctx.strokeStyle = "#334155"; ctx.strokeRect((i%3)*100, Math.floor(i/3)*100, 100, 100);
+                    if(i === rabbitIdx) { 
+                        ctx.font = "50px Arial"; 
+                        ctx.fillText("🐰", (i%3)*100+25, Math.floor(i/3)*100+70); 
+                    } else if (carrotIndices.includes(i)) {
+                        ctx.font = "50px Arial"; 
+                        ctx.fillText("🥕", (i%3)*100+25, Math.floor(i/3)*100+70);
+                    }
+                }
+            }
+
+            const level = document.getElementById('mole-level').value;
+            let speed, carrotCount;
+
+            if(level === "easy") { speed = 1000; carrotCount = 3; }
+            else if(level === "medium") { speed = 800; carrotCount = 4; }
+            else { speed = 600; carrotCount = 5; }
+
+            moleLoop = setInterval(() => { 
+                if(modalActive) return;
+                rabbitIdx = Math.floor(Math.random()*9);
+                carrotIndices = [];
+                while(carrotIndices.length < carrotCount) {
+                    let r = Math.floor(Math.random()*9);
+                    if(r !== rabbitIdx && !carrotIndices.includes(r)) {
+                        carrotIndices.push(r);
+                    }
+                }
+                drawMole(); 
+            }, speed);
+        }
+    </script>
+</body>
+</html>

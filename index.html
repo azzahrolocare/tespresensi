@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+     <link rel="icon" type="image/png" href="https://github.com/masrahmat-id/presensi-smp-smk-azzahro/raw/main/icon-apk-presensi-azzahro.png">
+     <link rel="apple-touch-icon" href="https://github.com/masrahmat-id/presensi-smp-smk-azzahro/raw/main/icon-apk-presensi-azzahro.png">
+    <title>PRESENSI ONLINE SMP & SMK AZ-ZAHRO</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#121212" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#121212" media="(prefers-color-scheme: dark)">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    <style>
+        :root {
+            --primary: #2ecc71;
+            --bg-body: #121212;
+            --bg-gradient: none;
+            --bg-card: #1e1e1e;
+            --text-main: #ffffff;
+            --header-font-size: 0.9rem;
+            --logo-size: 65px;
+        }
+
+        [data-theme="light"] {
+            --bg-body: #f0f2f5;
+            --bg-card: #ffffff;
+        }
+
+        html, body {
+            height: 100%; margin: 0; padding: 0;
+            overflow: hidden; 
+            background-color: var(--bg-body);
+            background-image: var(--bg-gradient);
+            overscroll-behavior: none; touch-action: none; 
+            position: fixed; width: 100%;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            color: var(--text-main); transition: background 0.4s ease;
+        }
+        .main-app {
+            width: 100%; max-width: 400px;
+            padding: 0 20px; box-sizing: border-box; text-align: center;
+            display: flex; flex-direction: column; height: 100%;
+            justify-content: center;
+        }
+        .header-container {
+            display: flex; align-items: center; justify-content: center;
+            gap: 15px; margin-bottom: 10px; margin-top: 5px; 
+        }
+
+        .header-container img { width: var(--logo-size); height: var(--logo-size); object-fit: contain; }
+
+        .header-container h3 {
+            margin: 0; font-size: var(--header-font-size);
+            line-height: 1.1; color: var(--text-main); font-weight: 800;
+        }
+
+        .datetime-display {
+            margin-bottom: 10px; font-weight: bold; font-size: 14px;
+            color: var(--text-main); letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .controls-row { display: flex; gap: 10px; margin-bottom: 15px; }
+
+        select, .btn-settings {
+            background: var(--bg-card); color: var(--text-main);
+            border: 2px solid var(--primary); border-radius: 15px; height: 50px;
+        }
+
+        select { flex-grow: 1; padding: 0 15px; font-weight: bold; font-size: 16px; }
+        .btn-settings { width: 50px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+
+        .scanner-box {
+            width: 100%; background: #000; padding: 0;
+            border-radius: 20px; border: 4px solid var(--primary); position: relative;
+            box-sizing: border-box; overflow: hidden;
+            min-height: 450px; display: flex; align-items: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        #reader { width: 100%; height: 100%; }
+        #reader video { object-fit: cover !important; min-height: 450px; }
+
+        #selection-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85); z-index: 100; display: none;
+            flex-direction: column; align-items: center; justify-content: center; gap: 10px;
+            padding: 20px; box-sizing: border-box;
+        }
+
+        .barcode-option {
+            background: var(--primary); color: white; padding: 15px;
+            border-radius: 12px; font-weight: bold; width: 100%; cursor: pointer;
+            border: 2px solid white; text-align: center; font-size: 14px;
+        }
+
+        .corner {
+            position: absolute; width: 30px; height: 30px;
+            border: 5px solid var(--primary); z-index: 20;
+        }
+        .top-left { top: 85px; left: calc(50% - 140px); border-right: none; border-bottom: none; border-top-left-radius: 10px; }
+        .top-right { top: 85px; right: calc(50% - 140px); border-left: none; border-bottom: none; border-top-right-radius: 10px; }
+        .bottom-left { bottom: 85px; left: calc(50% - 140px); border-right: none; border-top: none; border-bottom-left-radius: 10px; }
+        .bottom-right { bottom: 85px; right: calc(50% - 140px); border-left: none; border-top: none; border-bottom-right-radius: 10px; }
+
+        @keyframes scanAnim {
+            0% { top: 85px; opacity: 0.2; }
+            50% { top: 365px; opacity: 1; }
+            100% { top: 85px; opacity: 0.2; }
+        }
+        .scan-line {
+            width: 280px; height: 3px; background: var(--primary);
+            position: absolute; left: 50%; transform: translateX(-50%);
+            z-index: 15; animation: scanAnim 3s infinite ease-in-out;
+            box-shadow: 0 0 20px var(--primary);
+        }
+
+        .last-scan-container { margin-top: 15px; width: 100%; }
+
+        #last-name-display {
+            width: 100%; height: 55px; background: var(--bg-card);
+            border: 2px solid var(--primary); border-radius: 15px;
+            color: var(--primary); text-align: center; font-weight: 800;
+            font-size: 20px; box-sizing: border-box; outline: none;
+        }
+
+        #settings-modal, #about-pop-up {
+            display: none; position: fixed; top: 50%; left: 50%;
+            transform: translate(-50%, -50%); background: var(--bg-card);
+            padding: 15px; border-radius: 20px; border: 2px solid var(--primary);
+            z-index: 10000; width: 88%; max-width: 340px;
+            box-shadow: 0 0 50px rgba(0,0,0,0.8);
+            max-height: 85vh; overflow-y: auto; color: var(--text-main);
+        }
+
+        #about-pop-up { z-index: 10002; text-align: center; }
+
+        .modal-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 10px; border-bottom: 1px solid var(--primary); padding-bottom: 8px;
+        }
+        
+        .modal-header span, #about-pop-up h3 { color: var(--text-main) !important; }
+
+        .btn-close-modal { background: none; border: none; color: var(--text-main); font-size: 24px; font-weight: bold; cursor: pointer; }
+        
+        .setting-item { 
+            display: flex; justify-content: space-between; align-items: center; 
+            margin-top: 8px; gap: 8px; font-size: 13px; color: var(--text-main);
+        }
+        
+        input[type="range"] { height: 4px; flex-grow: 1; }
+        input[type="color"] { border: none; width: 30px; height: 25px; background: none; cursor: pointer; }
+
+        .btn-save { width: 100%; padding: 12px; background: var(--primary); color: white; font-weight: bold; border: none; border-radius: 10px; margin-top: 15px; cursor: pointer; }
+
+        .btn-database-trigger {
+            margin-top: 15px; padding: 10px; border: 1.5px solid var(--primary); border-radius: 10px; 
+            cursor: pointer; font-size: 12px; font-weight: 800; color: white; background: var(--primary);
+            text-align: center; display: flex; align-items: center; justify-content: center; gap: 8px;
+            width: 100%; box-sizing: border-box; text-decoration: none;
+        }
+
+        .btn-about-trigger {
+            margin-top: 8px; padding: 8px; border: 1px solid var(--primary);
+            border-radius: 8px; cursor: pointer; font-size: 11px; font-weight: bold;
+            color: var(--primary); background: rgba(46, 204, 113, 0.05);
+            text-align: center; display: block;
+        }
+
+        #status-kirim {
+            position: fixed; top: 30px; left: 50%; transform: translateX(-50%);
+            width: 80%; padding: 15px; border-radius: 15px;
+            z-index: 10001; display: none; background-color: var(--primary);
+            color: white; border: 2px solid white; text-align: center; font-weight: bold;
+        }
+        
+        .overlay-about {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7); z-index: 10001;
+        }
+
+        #gradient-controls {
+            display: none; border-top: 1px dashed rgba(46, 204, 113, 0.3);
+            margin-top: 8px; padding-top: 5px;
+        }
+
+        .section-title { font-size: 10px; font-weight: bold; color: var(--primary); opacity: 0.7; margin-top: 10px; text-transform: uppercase; }
+
+        #keterangan option[disabled] { display: none; }
+    </style>
+</head>
+<body data-theme="dark" onclick="toggleFullscreen()"> 
+    <div id="status-kirim"></div>
+    <div id="about-overlay" class="overlay-about" onclick="closeAbout()"></div>
+
+    <div class="main-app">  
+        <div class="header-container">
+            <img src="logo-smp-azzahro.png" alt="SMP">
+            <h3 id="text-header">PRESENSI DIGITAL<br>SMP ISLAM AZ-ZAHRO<br>SMK AZ-ZAHRO</h3>
+            <img src="logo-smk-azzahro.png" alt="SMK">
+        </div>
+
+        <div class="datetime-display" id="clock-display">MEMUAT WAKTU...</div>
+
+        <div class="controls-row">
+            <select id="keterangan">
+                <option value="" disabled selected>Pilih Keterangan</option>
+                <option value="●">🟢 HADIR</option>
+                <option value="I">🟡 IZIN</option>
+                <option value="S">🔵 SAKIT</option>
+                <option value="A">🔴 ALPA</option>
+            </select>
+            <div class="btn-settings" onclick="toggleSettings()">⚙</div>
+        </div>
+
+        <div class="scanner-box">
+            <div class="corner top-left"></div><div class="corner top-right"></div>
+            <div class="corner bottom-left"></div><div class="corner bottom-right"></div>
+            <div class="scan-line"></div>
+            <div id="reader"></div>
+            <div id="selection-overlay"></div>
+        </div>
+
+        <div class="last-scan-container">
+            <input type="text" id="last-name-display" placeholder="MENUNGGU SCAN..." readonly>
+        </div>
+        
+        <p id="fullscreen-info" style="font-size: 11px; opacity: 0.5; margin-top: 15px;">Ketuk layar untuk Fullscreen</p>
+
+        <div id="settings-modal">
+            <div class="modal-header">
+                <span style="font-weight: bold; font-size: 16px;">Pengaturan</span>
+                <button class="btn-close-modal" onclick="cancelSettings()">×</button>
+            </div>
+            <div class="section-title">Umum & Suara</div>
+            <div class="setting-item">
+                <span>Notifikasi</span>
+                <select id="sound-choice" style="height: 28px; font-size: 12px; width: 60%; color: #f3f6f4;">
+                    <option value="notification/Notif01.mp3" selected>Default</option>
+                    <option value="notification/Notif02.mp3">Notif 01</option>
+                    <option value="notification/Notif03.mp3">Notif 02</option>
+                    <option value="notification/Done.mp3">Done</option>
+                    <option value="notification/Notif-ML.mp3">Notif ML</option>
+                    <option value="notification/Mission-success.mp3">Mission Success</option>
+                    <option value="notification/Success-fanfare-trumpets.mp3">Success Fanfare</option>
+                    <option value="notification/kiw-kiw-cukurukuk-small-child.mp3">Kiw-kiw-cukurukuk-small-child</option>
+                    <option value="notification/kiw-kiw-original.mp3">kiw-kiw-original</option>
+                    <option value="notification/floraphonic-cute-animal-squeak-1.mp3">floraphonic-cute-animal-squeak-1</option>
+                    <option value="notification/floraphonic-cute-animal-squeak-2.mp3">floraphonic-cute-animal-squeak-2</option>
+                    <option value="notification/Yayyy.mp3">Yayyy...!!</option>
+                </select>
+            </div>
+            <div class="section-title">Tampilan Visual</div>
+            <div class="setting-item"><span>Logo</span><input type="range" id="range-logo" min="40" max="110" oninput="previewLayout()"></div>
+            <div class="setting-item"><span>Font</span><input type="range" id="range-font" min="0.5" max="1.5" step="0.05" oninput="previewLayout()"></div>
+            <div class="setting-item">
+                <span>Teks</span><input type="color" id="color-text" oninput="previewLayout()">
+                <span>Garis</span><input type="color" id="color-picker" oninput="previewLayout()">
+                <span>Latar</span><input type="color" id="color-bg" oninput="previewLayout()">
+            </div>
+            <div class="setting-item" style="border: 1px solid var(--primary); padding: 5px; border-radius: 5px;">
+                <span style="font-weight: bold;">Gunakan Gradien</span>
+                <input type="checkbox" id="gradient-toggle" onchange="previewLayout()">
+            </div>
+            <div id="gradient-controls">
+                <div class="setting-item">
+                    <span>Atas</span><input type="color" id="grad-1" oninput="previewLayout()">
+                    <span>Tengah</span><input type="color" id="grad-2" oninput="previewLayout()">
+                    <span>Bawah</span><input type="color" id="grad-3" oninput="previewLayout()">
+                </div>
+                <div class="setting-item">
+                    <span>Arah</span>
+                    <select id="grad-dir" onchange="previewLayout()" style="height: 25px; font-size: 11px; width: 100px; color: #f3f6f4;">
+                        <option value="180deg">Vertikal</option>
+                        <option value="90deg">Horizontal</option>
+                        <option value="45deg">Diagonal</option>
+                    </select>
+                </div>
+            </div>
+            <div class="setting-item"><span>Mode Terang</span><input type="checkbox" id="theme-toggle" onchange="previewLayout()"></div>
+            <a href="https://azzahrolocare.github.io/rekapitulasi-presensi-siswa/" target="_blank" class="btn-database-trigger" id="btn-rekap">REKAPITULASI PRESENSI SISWA</a>
+            <div class="btn-about-trigger" onclick="showAbout()">ⓘ Tentang Aplikasi</div>
+            <button class="btn-save" onclick="saveSettings()">SIMPAN</button>
+        </div>
+
+        <div id="about-pop-up">
+            <h3 style="margin-top:0; font-size: 18px;">Tentang Aplikasi</h3>
+            <p style="font-size:12px; line-height:1.6; text-align: left; opacity: 0.9;">"Aplikasi Presensi Digital SMP Islam & SMK Az-Zahro hadir sebagai solusi inovatif dalam mendukung digitalisasi pendidikan serta efisiensi administrasi sekolah.<br><br>Dengan fokus mentransformasi presensi konvensional menjadi sistem otomatis berbasis QR Code, aplikasi ini memastikan pendataan kehadiran berjalan cepat dan akurat.<br><br>Melalui integrasi langsung dengan cloud storage, seluruh data tersinkronisasi secara otomatis tanpa perlu rekapitulasi manual di akhir hari."</p>
+            <div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:10px; font-size:11px; text-align:left; border-left: 3px solid var(--primary);">
+                <div style="text-align: center; font-size:13px; font-weight: bold; color: var(--primary);">IT DIGITALIZATION</div>
+                <div style="text-align: center; font-weight: bold; text-decoration: underline; margin-bottom: 15px; font-size: 10px; color: var(--text-main);">SMP ISLAM AZ-ZAHRO & SMK AZ-ZAHRO</div>
+                <p style="margin: 5px 0;"><strong>Created by ops:</strong> Rahmattullah</p>
+                <p style="margin: 5px 0;"><strong>Email:</strong> mas.rahmat.id@gmail.com</p>
+            </div>
+            <button class="btn-save" style="margin-top:15px; padding:10px;" onclick="closeAbout()">TUTUP</button>
+        </div>
+    </div>
+
+    <div id="pwa-popup" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 9999; align-items: center; justify-content: center;">
+    <div style="background: var(--bg-card); width: 85%; max-width: 320px; padding: 25px; border-radius: 20px; border: 2px solid var(--primary); text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.5);">
+        <img src="https://github.com/masrahmat-id/presensi-smp-smk-azzahro/raw/main/icon-apk-presensi-azzahro.png" style="width: 80px; height: 80px; margin-bottom: 15px; border-radius: 15px;">
+        <h3 style="margin: 0 0 10px 0; font-size: 1.1rem; color: var(--text-main);">Instal Aplikasi</h3>
+        <p style="font-size: 0.9rem; color: #ccc; margin-bottom: 20px;">Pasang Aplikasi Presensi Digital Az-Zahro di layar utama Anda untuk akses lebih cepat.</p>
+        
+        <div style="display: flex; gap: 10px;">
+            <button id="btnBatal" style="flex: 1; background: transparent; color: #999; border: 1px solid #444; padding: 10px; border-radius: 10px; font-weight: bold; cursor: pointer;">Nanti</button>
+            <button id="btnInstalPop" style="flex: 1; background: var(--primary); color: white; border: none; padding: 10px; border-radius: 10px; font-weight: bold; cursor: pointer;">Instal</button>
+        </div>
+    </div>
+</div>
+ 
+    <script>
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => console.log(err));
+                document.getElementById('fullscreen-info').style.display = 'none';
+            }
+        }
+
+        const scriptURL = 'https://script.google.com/macros/s/AKfycbwCXbDTuaFkN7GlcXJxaFgDaKPEp2G9vySF1IKfWxUCTuEOCYt39nMmlEmI25pz4PSd/exec';
+        const rawURL = 'https://github.com/masrahmat-id/presensi-smp-smk-azzahro/raw/main/';
+        let isProcessing = false;
+        let detectedBarcodes = new Set();
+        let scanTimer = null;
+
+        function updateClock() {
+            const now = new Date();
+            const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+            const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+            document.getElementById('clock-display').innerText = `${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()} | ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`.toUpperCase();
+        }
+        setInterval(updateClock, 1000); updateClock();
+
+        function showAbout() {
+            document.getElementById('about-pop-up').style.display = 'block';
+            document.getElementById('about-overlay').style.display = 'block';
+        }
+
+        function closeAbout() {
+            document.getElementById('about-pop-up').style.display = 'none';
+            document.getElementById('about-overlay').style.display = 'none';
+        }
+
+        function applySettings() {
+            const config = JSON.parse(localStorage.getItem('absensiConfig')) || {
+                sound: 'notification/Notif01.mp3', theme: 'dark', primary: '#2ecc71',
+                logoSize: '65', fontSize: '0.9', textColor: '#ffffff', bgColor: '#121212',
+                useGrad: false, g1: '#121212', g2: '#1e1e1e', g3: '#000000', gDir: '180deg'
+            };
+            document.getElementById('sound-choice').value = config.sound;
+            document.getElementById('color-picker').value = config.primary;
+            document.getElementById('range-logo').value = config.logoSize;
+            document.getElementById('range-font').value = config.fontSize;
+            document.getElementById('color-text').value = config.textColor;
+            document.getElementById('color-bg').value = config.bgColor;
+            document.getElementById('theme-toggle').checked = (config.theme === 'light');
+            document.getElementById('gradient-toggle').checked = config.useGrad;
+            document.getElementById('grad-1').value = config.g1;
+            document.getElementById('grad-2').value = config.g2;
+            document.getElementById('grad-3').value = config.g3;
+            document.getElementById('grad-dir').value = config.gDir;
+            previewLayout();
+        }
+
+        function previewLayout() {
+            const useGrad = document.getElementById('gradient-toggle').checked;
+            const primary = document.getElementById('color-picker').value;
+            const bgSolid = document.getElementById('color-bg').value;
+            const textColor = document.getElementById('color-text').value;
+            const gradSection = document.getElementById('gradient-controls');
+
+            document.documentElement.style.setProperty('--text-main', textColor);
+            document.documentElement.style.setProperty('--primary', primary);
+            document.documentElement.style.setProperty('--logo-size', document.getElementById('range-logo').value + 'px');
+            document.documentElement.style.setProperty('--header-font-size', document.getElementById('range-font').value + 'rem');
+            
+            if (useGrad) {
+                gradSection.style.display = 'block';
+                const g1 = document.getElementById('grad-1').value;
+                const g2 = document.getElementById('grad-2').value;
+                const g3 = document.getElementById('grad-3').value;
+                const gDir = document.getElementById('grad-dir').value;
+                document.documentElement.style.setProperty('--bg-gradient', `linear-gradient(${gDir}, ${g1} 0%, ${g2} 50%, ${g3} 100%)`);
+                document.getElementById('btn-rekap').style.background = `linear-gradient(45deg, ${primary}, ${g2})`;
+            } else {
+                gradSection.style.display = 'none';
+                document.documentElement.style.setProperty('--bg-body', bgSolid);
+                document.documentElement.style.setProperty('--bg-gradient', 'none');
+                document.getElementById('btn-rekap').style.background = primary;
+            }
+            document.body.setAttribute('data-theme', document.getElementById('theme-toggle').checked ? 'light' : 'dark');
+        }
+
+        function toggleSettings() {
+            const m = document.getElementById('settings-modal');
+            m.style.display = m.style.display === 'block' ? 'none' : 'block';
+        }
+
+        function cancelSettings() { applySettings(); toggleSettings(); }
+
+        function saveSettings() {
+            const config = {
+                sound: document.getElementById('sound-choice').value,
+                theme: document.getElementById('theme-toggle').checked ? 'light' : 'dark',
+                primary: document.getElementById('color-picker').value,
+                logoSize: document.getElementById('range-logo').value,
+                fontSize: document.getElementById('range-font').value,
+                textColor: document.getElementById('color-text').value,
+                bgColor: document.getElementById('color-bg').value,
+                useGrad: document.getElementById('gradient-toggle').checked,
+                g1: document.getElementById('grad-1').value,
+                g2: document.getElementById('grad-2').value,
+                g3: document.getElementById('grad-3').value,
+                gDir: document.getElementById('grad-dir').value
+            };
+            localStorage.setItem('absensiConfig', JSON.stringify(config));
+            new Audio(rawURL + config.sound).play().catch(() => {});
+            toggleSettings();
+        }
+
+        // LOGIKA KIRIM DATA
+        function sendPresence(nama) {
+            const ketValue = document.getElementById('keterangan').value;
+            if (!ketValue) {
+                const s = document.getElementById('status-kirim');
+                s.innerText = "✖ PILIH KETERANGAN DULU!";
+                s.style.backgroundColor = "#e74c3c";
+                s.style.display = "block";
+                setTimeout(() => { s.style.display = "none"; s.style.backgroundColor = "var(--primary)"; }, 2000);
+                isProcessing = false;
+                document.getElementById('selection-overlay').style.display = 'none';
+                return;
+            }
+
+            document.getElementById('last-name-display').value = nama;
+            const config = JSON.parse(localStorage.getItem('absensiConfig')) || { sound: 'notification/Notif01.mp3' };
+            new Audio(rawURL + config.sound).play().catch(() => {});
+            
+            fetch(`${scriptURL}?nama=${encodeURIComponent(nama)}&keterangan=${encodeURIComponent(ketValue)}`, { method: 'GET', mode: 'no-cors' });
+            
+            const s = document.getElementById('status-kirim');
+            s.innerText = "✔ TERKIRIM: " + nama;
+            s.style.display = "block";
+            
+            document.getElementById('selection-overlay').style.display = 'none';
+            setTimeout(() => { s.style.display = "none"; isProcessing = false; detectedBarcodes.clear(); }, 2000);
+        }
+
+        applySettings();
+        const html5QrCode = new Html5Qrcode("reader");
+
+        // FUNGSI PROSES SCAN
+        function handleScan(decodedText) {
+            if (isProcessing) return;
+
+            detectedBarcodes.add(decodedText.trim());
+
+            // Tunggu 300ms untuk menangkap barcode lain di sekitar kartu
+            if (scanTimer) clearTimeout(scanTimer);
+            scanTimer = setTimeout(() => {
+                const results = Array.from(detectedBarcodes);
+                
+                if (results.length > 1) {
+                    isProcessing = true;
+                    const overlay = document.getElementById('selection-overlay');
+                    overlay.innerHTML = '<p style="color:white; font-size:12px; font-weight:bold; margin-bottom:10px;">TERDETEKSI ' + results.length + ' BARCODE. PILIH NAMA:</p>';
+                    
+                    results.forEach(nama => {
+                        const btn = document.createElement('div');
+                        btn.className = 'barcode-option';
+                        btn.innerText = nama;
+                        btn.onclick = (e) => { e.stopPropagation(); sendPresence(nama); };
+                        overlay.appendChild(btn);
+                    });
+
+                    const btnBatal = document.createElement('div');
+                    btnBatal.className = 'barcode-option';
+                    btnBatal.style.background = '#7f8c8d';
+                    btnBatal.innerText = 'BATAL SCAN ULANG';
+                    btnBatal.onclick = (e) => { 
+                        e.stopPropagation();
+                        overlay.style.display = 'none'; 
+                        isProcessing = false; 
+                        detectedBarcodes.clear();
+                    };
+                    overlay.appendChild(btnBatal);
+                    
+                    overlay.style.display = 'flex';
+                } else if (results.length === 1) {
+                    isProcessing = true;
+                    sendPresence(results[0]);
+                }
+            }, 300);
+        }
+
+        html5QrCode.start(
+            { facingMode: "environment" }, 
+            { fps: 20, qrbox: { width: 280, height: 280 } },
+            handleScan
+        ).catch(err => console.error(err));
+    </script>
+
+<script>
+    let promptInstalasi;
+    const popUp = document.getElementById('pwa-popup');
+    const tombolInstal = document.getElementById('btnInstalPop');
+    const tombolBatal = document.getElementById('btnBatal');
+
+    // Menangkap event instalasi dari browser
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        promptInstalasi = e;
+        
+        // Munculkan pop-up (bisa diberi delay 2 detik agar tidak terlalu kaget)
+        setTimeout(() => {
+            popUp.style.display = 'flex';
+        }, 2000);
+    });
+
+    // Aksi saat tombol Instal di klik
+    tombolInstal.addEventListener('click', async () => {
+        if (!promptInstalasi) return;
+        
+        popUp.style.display = 'none';
+        promptInstalasi.prompt();
+        
+        const { outcome } = await promptInstalasi.userChoice;
+        console.log(`User memilih: ${outcome}`);
+        promptInstalasi = null;
+    });
+
+    // Aksi saat tombol Batal di klik
+    tombolBatal.addEventListener('click', () => {
+        popUp.style.display = 'none';
+    });
+
+    // Deteksi jika sudah terinstal
+    window.addEventListener('appinstalled', () => {
+        popUp.style.display = 'none';
+    });
+</script>    
+    <script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js')
+      .then(() => console.log("SW Presensi Terdaftar!"))
+      .catch(err => console.log("Gagal Daftar SW:", err));
+  }
+</script>
+</body>
+</html>
