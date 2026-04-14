@@ -342,17 +342,19 @@
                 <span>Notifikasi</span>
                 <select id="sound-choice" style="height: 28px; font-size: 12px; width: 60%; color: #f3f6f4;">
                     <option value="notification/Notif01.mp3" selected>Default</option>
-                    <option value="notification/Notif02.mp3">Notif 01</option>
-                    <option value="notification/Notif03.mp3">Notif 02</option>
+                    <option value="notification/Notif02.mp3">Notifikasi 01</option>
+                    <option value="notification/Notif03.mp3">Notifikasi 02</option>
+                    <option value="notification/apple-success.mp3">Notifikasi Success Apple</option>
+                    <option value="notification/success.mp3">Success</option>
                     <option value="notification/Done.mp3">Done</option>
-                    <option value="notification/Notif-ML.mp3">Notif ML</option>
+                    <option value="notification/Notif-ML.mp3">Notifikasi ML</option>
                     <option value="notification/Mission-success.mp3">Mission Success</option>
                     <option value="notification/Success-fanfare-trumpets.mp3">Success Fanfare</option>
-                    <option value="notification/kiw-kiw-cukurukuk-small-child.mp3">Kiw-kiw-cukurukuk-small-child</option>
-                    <option value="notification/kiw-kiw-original.mp3">kiw-kiw-original</option>
                     <option value="notification/floraphonic-cute-animal-squeak-1.mp3">floraphonic-cute-animal-squeak-1</option>
                     <option value="notification/floraphonic-cute-animal-squeak-2.mp3">floraphonic-cute-animal-squeak-2</option>
                     <option value="notification/Yayyy.mp3">Yayyy...!!</option>
+                    <option value="notification/kiw-kiw-cukurukuk-small-child.mp3">Kiw-kiw-cukurukuk-small-child</option>
+                    <option value="notification/kiw-kiw-original.mp3">kiw-kiw-original</option>
                 </select>
             </div>
             <div class="section-title">Tampilan Visual</div>
@@ -663,7 +665,7 @@
                 // --- FITUR BARU: NOTIFIKASI SUARA SELESAI ---
         const config = JSON.parse(localStorage.getItem('absensiConfig')) || { sound: 'notification/Notif01.mp3' };
         // Memutar suara 'Done.mp3' atau suara sukses lainnya saat antrean habis
-        const audioDone = new Audio(rawURL + 'notification/Done.mp3'); 
+        const audioDone = new Audio(rawURL + 'notification/succes-data-offline.mp3'); 
         audioDone.play().catch(e => console.log("Gagal memutar notifikasi suara:", e));
         // --------------------------------------------
                 
