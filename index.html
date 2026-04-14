@@ -199,7 +199,7 @@
 
         #keterangan option[disabled] { display: none; }
 
-        /* Tombol Antrean & Modal Antrean */
+        /* CSS BARU UNTUK TOMBOL ANTREAN */
         .btn-antrean-float {
             position: fixed; bottom: 20px; right: 20px; 
             background: #f39c12; color: white; border: none; 
@@ -231,7 +231,8 @@
         <div class="modal-content-antrean" onclick="event.stopPropagation()">
             <h3 style="margin-top:0; color:var(--primary); text-align:center;">ANTREAN OFFLINE</h3>
             <hr style="border:0; border-top:1px solid rgba(255,255,255,0.1); margin:15px 0;">
-            <div id="daftar-item-antrean" style="margin-bottom:20px; max-height:300px; overflow-y:auto;"></div>
+            <div id="daftar-item-antrean" style="margin-bottom:20px; max-height:300px; overflow-y:auto;">
+                </div>
             <div style="display:flex; gap:10px;">
                 <button onclick="kirimManual()" id="btn-kirim-manual" style="flex:1; background:var(--primary); color:white; border:none; padding:12px; border-radius:10px; font-weight:bold; cursor:pointer;">KIRIM SEKARANG</button>
                 <button onclick="tutupModalAntrean()" style="flex:1; background:#7f8c8d; color:white; border:none; padding:12px; border-radius:10px; font-weight:bold; cursor:pointer;">TUTUP</button>
@@ -368,7 +369,7 @@
         };
         requestDB.onsuccess = (e) => { 
             db = e.target.result; 
-            updateJumlahAntreanBadge();
+            updateJumlahAntreanBadge(); // Update badge saat awal buka
         };
 
         function toggleFullscreen() {
@@ -488,7 +489,7 @@
             setTimeout(() => { s.style.display = "none"; s.style.backgroundColor = "var(--primary)"; isProcessing = false; detectedBarcodes.clear(); }, 2000);
         }
 
-        // MODAL ANTREAN & SINKRONISASI BERSIH
+        // FUNGSI ANTREAN & MODAL BARU
         function updateJumlahAntreanBadge() {
             if (!db) return;
             const transaction = db.transaction(["antrean"], "readonly");
@@ -499,7 +500,7 @@
             };
         }
 
-        function bukaModalAntrean(e) {
+        async function bukaModalAntrean(e) {
             if(e) e.stopPropagation();
             const modal = document.getElementById('modal-antrean');
             const container = document.getElementById('daftar-item-antrean');
@@ -534,23 +535,33 @@
         }
 
         async function kirimManual() {
-            if (!navigator.onLine) {
-                alert("Anda masih offline! Tidak bisa mengirim.");
-                return;
-            }
             const btn = document.getElementById('btn-kirim-manual');
             btn.innerText = "MENGIRIM...";
             btn.disabled = true;
 
-            await sinkronkanData();
-            
-            setTimeout(() => {
-                btn.innerText = "KIRIM SEKARANG";
+            if ('serviceWorker' in navigator && 'SyncManager' in window) {
+                const registration = await navigator.serviceWorker.ready;
+                try {
+                    await registration.sync.register('sinkron-presensi');
+                    updateStatusUI("🚀 SINKRONISASI DIPICU!", "var(--primary)");
+                    setTimeout(() => {
+                        tutupModalAntrean();
+                        updateJumlahAntreanBadge();
+                        btn.innerText = "KIRIM SEKARANG";
+                    }, 2000);
+                } catch (e) {
+                    alert("Gagal memicu sinkronisasi.");
+                    btn.disabled = false;
+                    btn.innerText = "KIRIM SEKARANG";
+                }
+            } else {
+                // Fallback jika tidak dukung Background Sync
+                sinkronkanData();
                 tutupModalAntrean();
-            }, 1500);
+            }
         }
 
-        // LOGIKA KIRIM DATA
+        // LOGIKA KIRIM DATA (OFFLINE SUPPORT)
         function sendPresence(nama) {
             const ketValue = document.getElementById('keterangan').value;
             if (!ketValue) {
@@ -569,16 +580,22 @@
             if (navigator.onLine) {
                 updateStatusUI("✔ TERKIRIM: " + nama, "var(--primary)");
                 fetch(`${scriptURL}?nama=${encodeURIComponent(nama)}&keterangan=${encodeURIComponent(ketValue)}`, { 
-                    method: 'GET', mode: 'no-cors', cache: 'no-store'
+                    method: 'GET', 
+                    mode: 'no-cors',
+                    cache: 'no-store'
                 });
             } else {
                 simpanKeOffline(dataPresensi);
             }
+            
             document.getElementById('selection-overlay').style.display = 'none';
         }
 
         function simpanKeOffline(data) {
             if (!db) return;
+            const config = JSON.parse(localStorage.getItem('absensiConfig')) || { sound: 'notification/Notif01.mp3' };
+            new Audio(rawURL + config.sound).play().catch(err => console.log("Gagal putar suara:", err));
+
             const transaction = db.transaction(["antrean"], "readwrite");
             const store = transaction.objectStore("antrean");
             store.add(data);
@@ -587,6 +604,12 @@
                 updateJumlahAntreanBadge();
                 updateStatusUI("☁ OFFLINE: " + data.nama + " DISIMPAN", "#f39c12");
             };
+
+            if ('serviceWorker' in navigator && 'SyncManager' in window) {
+                navigator.serviceWorker.ready.then(registration => {
+                    return registration.sync.register('sinkron-presensi');
+                }).catch(err => console.log("Sync gagal didaftarkan", err));
+            }
         }
 
         async function sinkronkanData() {
@@ -595,22 +618,15 @@
             const store = transaction.objectStore("antrean");
             const request = store.getAll();
 
-            request.onsuccess = async () => {
+            request.onsuccess = () => {
                 const dataAntrean = request.result;
                 if (dataAntrean.length > 0) {
-                    for (const item of dataAntrean) {
-                        try {
-                            await fetch(`${scriptURL}?nama=${encodeURIComponent(item.nama)}&keterangan=${encodeURIComponent(item.keterangan)}`, { method: 'GET', mode: 'no-cors' });
-                        } catch (e) { console.log("Gagal kirim item:", item.nama); }
-                    }
-                    
-                    // Bersihkan Database setelah semua terkirim
-                    const clearTrans = db.transaction(["antrean"], "readwrite");
-                    clearTrans.objectStore("antrean").clear();
-                    clearTrans.oncomplete = () => {
+                    dataAntrean.forEach(item => {
+                        fetch(`${scriptURL}?nama=${encodeURIComponent(item.nama)}&keterangan=${encodeURIComponent(item.keterangan)}`, { method: 'GET', mode: 'no-cors' });
+                    });
+                    store.clear();
+                    transaction.oncomplete = () => {
                         updateJumlahAntreanBadge();
-                        // Kosongkan tampilan modal secara instan
-                        document.getElementById('daftar-item-antrean').innerHTML = "<p style='color:#2ecc71; text-align:center;'>Berhasil dikirim!</p>";
                         updateStatusUI("🔄 DATA OFFLINE TERSINKRON!", "var(--primary)");
                     };
                 }
@@ -702,12 +718,16 @@
         popUp.style.display = 'none';
     });
 </script>    
-<script>
+    <script>
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('./sw.js')
       .then(() => console.log("SW Presensi Terdaftar!"))
       .catch(err => console.log("Gagal Daftar SW:", err));
   }
+
+if ("Notification" in window) {
+    Notification.requestPermission();
+}
 </script>
 </body>
 </html>
