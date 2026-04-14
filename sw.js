@@ -1,5 +1,6 @@
-const CACHE_NAME = 'presensi-azzahro-v1.0.2';
+const CACHE_NAME = 'presensi-azzahro-v1.0.3';
 const OFFLINE_URL = './offline.html';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwCXbDTuaFkN7GlcXJxaFgDaKPEp2G9vySF1IKfWxUCTuEOCYt39nMmlEmI25pz4PSd/exec';
 
 const ASSETS_TO_CACHE = [
   './',
@@ -12,7 +13,7 @@ const ASSETS_TO_CACHE = [
   './icon-apk-presensi-azzahro.png'
 ];
 
-// Install: Simpan semua aset ke cache
+// 1. INSTALL: Simpan aset ke cache
 self.addEventListener('install', (e) => {
   self.skipWaiting();
   e.waitUntil(
@@ -23,7 +24,7 @@ self.addEventListener('install', (e) => {
   );
 });
 
-// Activate: Hapus cache lama
+// 2. ACTIVATE: Bersihkan cache lama
 self.addEventListener('activate', (e) => {
   e.waitUntil(
     caches.keys().then((keys) => {
@@ -40,22 +41,17 @@ self.addEventListener('activate', (e) => {
   return self.clients.claim();
 });
 
-// Fetch: Logika cerdas untuk aset vs API
+// 3. FETCH: Ambil aset dari cache, kecuali untuk Google Script
 self.addEventListener('fetch', (e) => {
-  // PENTING: Jangan masukkan permintaan ke Google Script ke dalam Cache
-  // Biarkan file index.html yang menangani logika offline-nya sendiri
   if (e.request.url.includes('script.google.com')) {
-    return; 
+    return; // Biarkan logika di index.html yang menangani API
   }
 
   e.respondWith(
     caches.match(e.request).then((cachedResponse) => {
-      if (cachedResponse) {
-        return cachedResponse;
-      }
+      if (cachedResponse) return cachedResponse;
 
       return fetch(e.request).catch(() => {
-        // Jika benar-benar offline dan meminta halaman
         if (e.request.mode === 'navigate' || (e.request.method === 'GET' && e.request.headers.get('accept').includes('text/html'))) {
           return caches.match(OFFLINE_URL);
         }
@@ -63,3 +59,53 @@ self.addEventListener('fetch', (e) => {
     })
   );
 });
+
+// 4. SYNC: Kirim data presensi saat internet kembali aktif (Background Sync)
+self.addEventListener('sync', (e) => {
+  if (e.tag === 'sinkron-presensi') {
+    console.log('SW: Mendeteksi Internet. Menjalankan Sinkronisasi Latar Belakang...');
+    e.waitUntil(kirimDataDariIndexedDB());
+  }
+});
+
+// Fungsi untuk membaca data dari IndexedDB dan mengirim ke Google Sheets
+async function kirimDataDariIndexedDB() {
+  const dbPromise = new Promise((resolve) => {
+    const request = indexedDB.open("PresensiOfflineDB", 1);
+    request.onsuccess = () => resolve(request.result);
+  });
+
+  const db = await dbPromise;
+  
+  // Cek apakah Object Store "antrean" ada
+  if (!db.objectStoreNames.contains("antrean")) return;
+
+  const transaction = db.transaction(["antrean"], "readwrite");
+  const store = transaction.objectStore("antrean");
+  
+  const dataAntrean = await new Promise(resolve => {
+    const req = store.getAll();
+    req.onsuccess = () => resolve(req.result);
+  });
+
+  if (dataAntrean.length > 0) {
+    for (const item of dataAntrean) {
+      try {
+        // Kirim data ke Google Apps Script
+        await fetch(`${SCRIPT_URL}?nama=${encodeURIComponent(item.nama)}&keterangan=${encodeURIComponent(item.keterangan)}`, { 
+          method: 'GET', 
+          mode: 'no-cors' 
+        });
+        console.log(`SW: Berhasil mengirim data: ${item.nama}`);
+      } catch (err) {
+        console.error("SW: Gagal mengirim, akan dicoba lagi nanti.", err);
+        return; // Berhenti jika ada error (mungkin internet putus lagi)
+      }
+    }
+    
+    // Hapus semua antrean setelah pengiriman berhasil
+    const clearTx = db.transaction(["antrean"], "readwrite");
+    clearTx.objectStore("antrean").clear();
+    console.log("SW: Sinkronisasi selesai, antrean dibersihkan.");
+  }
+}
