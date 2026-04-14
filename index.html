@@ -235,7 +235,7 @@
         📦 ANTREAN: <span id="label-jumlah-antrean">0</span>
     </button>
 
-    <div id="modal-antrean" onclick="tutupModalAntrean()">
+    <div id="modal-antrean">
         <div class="modal-content-antrean" onclick="event.stopPropagation()">
             <h3 style="margin-top:0; color:var(--primary); text-align:center;">ANTREAN OFFLINE</h3>
             <hr style="border:0; border-top:1px solid rgba(255,255,255,0.1); margin:15px 0;">
@@ -516,11 +516,11 @@
             const modal = document.getElementById('modal-antrean');
             const container = document.getElementById('daftar-item-antrean');
             
-            // Reset Loading UI
+            // Reset Loading UI & Button
             document.getElementById('prog-cont').style.display = 'none';
             document.getElementById('loading-text').style.display = 'none';
             document.getElementById('prog-bar').style.width = '0%';
-
+            
             container.innerHTML = "<p style='text-align:center;'>Memuat data...</p>";
             modal.style.display = 'flex';
 
@@ -536,8 +536,12 @@
                     document.getElementById('btn-kirim-manual').style.opacity = "0.5";
                     return;
                 }
-                document.getElementById('btn-kirim-manual').disabled = false;
-                document.getElementById('btn-kirim-manual').style.opacity = "1";
+                const btnKirim = document.getElementById('btn-kirim-manual');
+                btnKirim.disabled = false;
+                btnKirim.style.opacity = "1";
+                btnKirim.style.background = "var(--primary)";
+                btnKirim.innerText = "KIRIM SEKARANG";
+
                 container.innerHTML = items.map(item => `
                     <div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:10px; margin-bottom:8px; border-left:4px solid #f39c12;">
                         <strong style="font-size:14px;">${item.nama}</strong><br>
@@ -557,25 +561,34 @@
                 return;
             }
 
+            const btnKirim = document.getElementById('btn-kirim-manual');
+            const btnTutup = document.getElementById('btn-tutup-antrean');
+            const progCont = document.getElementById('prog-cont');
+            const progBar = document.getElementById('prog-bar');
+            const loadText = document.getElementById('loading-text');
+            const totalText = document.getElementById('total-send');
+            const currentText = document.getElementById('current-send');
+
+            // KUNCI TOMBOL AGAR HANYA BISA DIKLIK SEKALI
+            btnKirim.disabled = true;
+            btnKirim.style.opacity = "0.6";
+            btnKirim.style.background = "#555";
+            btnKirim.innerText = "SEDANG MENGIRIM...";
+            btnTutup.disabled = true;
+
             const transaction = db.transaction(["antrean"], "readwrite");
             const store = transaction.objectStore("antrean");
             const req = store.getAll();
 
             req.onsuccess = async () => {
                 const dataAntrean = req.result;
-                if (dataAntrean.length === 0) return;
+                if (dataAntrean.length === 0) {
+                    btnKirim.disabled = false;
+                    btnTutup.disabled = false;
+                    return;
+                }
 
                 // Tampilkan UI Loading
-                const btnKirim = document.getElementById('btn-kirim-manual');
-                const btnTutup = document.getElementById('btn-tutup-antrean');
-                const progCont = document.getElementById('prog-cont');
-                const progBar = document.getElementById('prog-bar');
-                const loadText = document.getElementById('loading-text');
-                const totalText = document.getElementById('total-send');
-                const currentText = document.getElementById('current-send');
-
-                btnKirim.disabled = true;
-                btnTutup.disabled = true;
                 progCont.style.display = 'block';
                 loadText.style.display = 'block';
                 totalText.innerText = dataAntrean.length;
@@ -609,6 +622,9 @@
                     tutupModalAntrean();
                     btnKirim.disabled = false;
                     btnTutup.disabled = false;
+                    btnKirim.style.opacity = "1";
+                    btnKirim.style.background = "var(--primary)";
+                    btnKirim.innerText = "KIRIM SEKARANG";
                 }, 1000);
             };
         }
@@ -659,7 +675,6 @@
 
         async function sinkronkanData() {
             if (!db || !navigator.onLine) return;
-            // Sinkronisasi otomatis saat online kembali (opsional, karena sudah ada tombol manual)
             const transaction = db.transaction(["antrean"], "readonly");
             const store = transaction.objectStore("antrean");
             const req = store.count();
