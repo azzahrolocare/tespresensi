@@ -105,7 +105,34 @@ function showNotification(title, body) {
       badge: './icon-apk-presensi-azzahro.png',
       vibrate: [200, 100, 200],
       tag: 'sync-notification',
-      requireInteraction: false // Notifikasi akan hilang sendiri setelah dibaca
+      data: {
+        url: 'https://azzahrolocare.github.io/rekapitulasi-presensi-siswa/'
+      },
+      requireInteraction: true // Notifikasi tetap ada sampai diklik atau di-swipe
     });
   }
 }
+
+// Listener untuk menangani klik pada notifikasi
+self.addEventListener('notificationclick', (e) => {
+  e.notification.close(); // Tutup notifikasi setelah diklik
+
+  // URL tujuan saat notifikasi diklik
+  const urlToOpen = 'https://azzahrolocare.github.io/rekapitulasi-presensi-siswa/';
+
+  e.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((windowClients) => {
+      // Jika tab aplikasi sudah terbuka, fokuskan ke tab tersebut dan arahkan URL-nya
+      for (var i = 0; i < windowClients.length; i++) {
+        var client = windowClients[i];
+        if (client.url === urlToOpen && 'focus' in client) {
+          return client.focus();
+        }
+      }
+      // Jika belum ada tab yang terbuka, buka jendela baru
+      if (clients.openWindow) {
+        return clients.openWindow(urlToOpen);
+      }
+    })
+  );
+});
