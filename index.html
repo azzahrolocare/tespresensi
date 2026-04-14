@@ -291,7 +291,7 @@
             </div>
             <div style="display:flex; gap:10px;">
                 <button onclick="kirimManual()" id="btn-kirim-manual" style="flex:1; background:var(--primary); color:white; border:none; padding:12px; border-radius:10px; font-weight:bold; cursor:pointer;">
-                    <span id="text-btn-kirim">KIRIM SEKARANG</span>
+                    <span id="text-btn-kirim">KIRIM</span>
                 </button>
                 <button onclick="tutupModalAntrean()" id="btn-tutup-antrean" style="flex:1; background:#7f8c8d; color:white; border:none; padding:12px; border-radius:10px; font-weight:bold; cursor:pointer;">TUTUP</button>
             </div>
@@ -668,7 +668,7 @@
                     btnTutup.disabled = false;
                     btnKirim.style.opacity = "1";
                     btnKirim.style.background = "var(--primary)";
-                    textBtn.innerText = "KIRIM SEKARANG";
+                    textBtn.innerText = "KIRIM";
                     textBtn.classList.remove('loading-dots');
                 }, 1000);
             };
