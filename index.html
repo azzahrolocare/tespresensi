@@ -181,8 +181,9 @@
         #status-kirim {
             position: fixed; top: 30px; left: 50%; transform: translateX(-50%);
             width: 80%; padding: 15px; border-radius: 15px;
-            z-index: 10001; display: none; background-color: var(--primary);
+            z-index: 30000; display: none; background-color: var(--primary);
             color: white; border: 2px solid white; text-align: center; font-weight: bold;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
         }
         
         .overlay-about {
@@ -253,6 +254,7 @@
 </head>
 <body data-theme="dark" onclick="toggleFullscreen()"> 
     <div id="status-kirim"></div>
+    
     <div id="about-overlay" class="overlay-about" onclick="closeAbout()"></div>
 
     <button id="btn-float-offline" class="btn-antrean-float" onclick="bukaModalAntrean(event)">
@@ -522,7 +524,13 @@
             s.innerText = pesan;
             s.style.backgroundColor = warna;
             s.style.display = "block";
-            setTimeout(() => { s.style.display = "none"; s.style.backgroundColor = "var(--primary)"; isProcessing = false; detectedBarcodes.clear(); }, 2000);
+            // Hilangkan otomatis dalam 3 detik
+            setTimeout(() => { 
+                s.style.display = "none"; 
+                s.style.backgroundColor = "var(--primary)"; 
+                isProcessing = false; 
+                detectedBarcodes.clear(); 
+            }, 3000);
         }
 
         // FUNGSI ANTREAN & LOADING PROGRESS
@@ -536,7 +544,6 @@
                 const btn = document.getElementById('btn-float-offline');
                 document.getElementById('label-jumlah-antrean').innerText = jml;
                 
-                // Ganti Gaya Jika Ada Data
                 if (jml > 0) {
                     btn.classList.add('ada-data');
                 } else {
@@ -550,7 +557,6 @@
             const modal = document.getElementById('modal-antrean');
             const container = document.getElementById('daftar-item-antrean');
             
-            // Reset Loading UI & Button
             document.getElementById('prog-cont').style.display = 'none';
             document.getElementById('loading-text').style.display = 'none';
             document.getElementById('prog-bar').style.width = '0%';
@@ -590,8 +596,9 @@
         }
 
         async function kirimManual() {
+            // MENGGANTI ALERT DENGAN TOAST CUSTOM
             if (!navigator.onLine) {
-                alert("Anda masih Offline. Hubungkan internet untuk mengirim.");
+                updateStatusUI("⚠️ ANDA MASIH OFFLINE!", "#e67e22");
                 return;
             }
 
@@ -603,7 +610,6 @@
             const totalText = document.getElementById('total-send');
             const currentText = document.getElementById('current-send');
 
-            // KUNCI TOMBOL AGAR HANYA BISA DIKLIK SEKALI
             btnKirim.disabled = true;
             btnKirim.style.opacity = "0.6";
             btnKirim.style.background = "#555";
@@ -622,7 +628,6 @@
                     return;
                 }
 
-                // Tampilkan UI Loading
                 progCont.style.display = 'block';
                 loadText.style.display = 'block';
                 totalText.innerText = dataAntrean.length;
@@ -630,26 +635,19 @@
                 for (let i = 0; i < dataAntrean.length; i++) {
                     const item = dataAntrean[i];
                     currentText.innerText = i + 1;
-                    
-                    // Hitung Persentase Loading
                     const persen = ((i + 1) / dataAntrean.length) * 100;
                     progBar.style.width = persen + "%";
 
-                    // Kirim ke Google Sheets
                     await fetch(`${scriptURL}?nama=${encodeURIComponent(item.nama)}&keterangan=${encodeURIComponent(item.keterangan)}`, { 
                         method: 'GET', 
                         mode: 'no-cors' 
                     });
 
-                    // Hapus dari IndexedDB per item
                     const deleteTx = db.transaction(["antrean"], "readwrite");
                     deleteTx.objectStore("antrean").delete(item.id);
-                    
-                    // Delay kecil agar animasi loading terlihat smooth
                     await new Promise(r => setTimeout(r, 100));
                 }
 
-                // Selesai
                 updateJumlahAntreanBadge();
                 updateStatusUI("🔄 SEMUA DATA TERKIRIM!", "var(--primary)");
                 setTimeout(() => {
