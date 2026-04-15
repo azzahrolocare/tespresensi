@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-     <link rel="icon" type="image/png" href="icon-apk-presensi-azzahro.png">
-     <link rel="apple-touch-icon" href="icon-apk-presensi-azzahro.png">
+    <link rel="icon" type="image/png" href="icon-apk-presensi-azzahro.png">
+    <link rel="apple-touch-icon" href="icon-apk-presensi-azzahro.png">
     <title>PRESENSI DIGITAL SMP & SMK AZ-ZAHRO</title>
     
     <link rel="manifest" href="manifest.json">
@@ -200,25 +200,6 @@
 
         .section-title { font-size: 10px; font-weight: bold; color: var(--primary); opacity: 0.7; margin-top: 10px; text-transform: uppercase; }
 
-        #keterangan option[disabled] { display: none; }
-
-        /* ANIMASI ELLIPSIS UNTUK TOMBOL (5 TITIK) */
-        .loading-dots::after {
-            display: inline-block;
-            animation: ellipsis 2s infinite;
-            content: ".";
-            width: 2.5em; /* Lebih lebar untuk menampung 5 titik */
-            text-align: left;
-        }
-        @keyframes ellipsis {
-            0% { content: "."; }
-            20% { content: ".."; }
-            40% { content: "..."; }
-            60% { content: "...."; }
-            80% { content: "....."; }
-            100% { content: "."; }
-        }
-
         .btn-antrean-float {
             position: fixed; 
             bottom: 85px; 
@@ -249,8 +230,6 @@
             border: 1.5px solid white;
         }
 
-        #label-jumlah-antrean { font-size: 14px; }
-
         #modal-antrean {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
             background: rgba(0,0,0,0.85); z-index: 20000; justify-content: center; align-items: center;
@@ -268,6 +247,22 @@
             height: 100%; background: var(--primary); width: 0%; transition: width 0.3s;
         }
         #loading-text { font-size: 12px; color: var(--primary); text-align: center; margin-bottom: 5px; display: none; font-weight: bold; }
+
+        @keyframes ellipsis {
+            0% { content: "."; }
+            20% { content: ".."; }
+            40% { content: "..."; }
+            60% { content: "...."; }
+            80% { content: "....."; }
+            100% { content: "."; }
+        }
+        .loading-dots::after {
+            display: inline-block;
+            animation: ellipsis 2s infinite;
+            content: ".";
+            width: 2.5em;
+            text-align: left;
+        }
     </style>
 </head>
 <body data-theme="dark" onclick="toggleFullscreen()"> 
@@ -342,19 +337,9 @@
                 <span>Notifikasi</span>
                 <select id="sound-choice" style="height: 28px; font-size: 12px; width: 60%; color: #f3f6f4;">
                     <option value="notification/Notif01.mp3" selected>Default</option>
-                    <option value="notification/Notif02.mp3">Notifikasi 01</option>
-                    <option value="notification/Notif03.mp3">Notifikasi 02</option>
-                    <option value="notification/apple-success.mp3">Notifikasi Success Apple</option>
+                    <option value="notification/apple-success.mp3">Success Apple</option>
                     <option value="notification/success.mp3">Success</option>
                     <option value="notification/Done.mp3">Done</option>
-                    <option value="notification/Notif-ML.mp3">Notifikasi ML</option>
-                    <option value="notification/Mission-success.mp3">Mission Success</option>
-                    <option value="notification/Success-fanfare-trumpets.mp3">Success Fanfare</option>
-                    <option value="notification/floraphonic-cute-animal-squeak-1.mp3">floraphonic-cute-animal-squeak-1</option>
-                    <option value="notification/floraphonic-cute-animal-squeak-2.mp3">floraphonic-cute-animal-squeak-2</option>
-                    <option value="notification/Yayyy.mp3">Yayyy...!!</option>
-                    <option value="notification/kiw-kiw-cukurukuk-small-child.mp3">Kiw-kiw-cukurukuk-small-child</option>
-                    <option value="notification/kiw-kiw-original.mp3">kiw-kiw-original</option>
                 </select>
             </div>
             <div class="section-title">Tampilan Visual</div>
@@ -375,55 +360,51 @@
                     <span>Tengah</span><input type="color" id="grad-2" oninput="previewLayout()">
                     <span>Bawah</span><input type="color" id="grad-3" oninput="previewLayout()">
                 </div>
-                <div class="setting-item">
-                    <span>Arah</span>
-                    <select id="grad-dir" onchange="previewLayout()" style="height: 25px; font-size: 11px; width: 100px; color: #f3f6f4;">
-                        <option value="180deg">Vertikal</option>
-                        <option value="90deg">Horizontal</option>
-                        <option value="45deg">Diagonal</option>
-                    </select>
-                </div>
             </div>
             <div class="setting-item"><span>Mode Terang</span><input type="checkbox" id="theme-toggle" onchange="previewLayout()"></div>
-            <a href="https://azzahrolocare.github.io/rekapitulasi-presensi-siswa/" target="_blank" class="btn-database-trigger" id="btn-rekap">REKAPITULASI PRESENSI SISWA</a>
-            <div class="btn-about-trigger" onclick="showAbout()">ⓘ Tentang Aplikasi</div>
+
             <div class="section-title">Pemeliharaan</div>
             <div class="setting-item" style="flex-direction: column; align-items: flex-start; gap: 5px;">
-            <span style="font-size: 11px; opacity: 0.8;">Bersihkan cache jika aplikasi terasa berat atau tidak update.</span>
-            <button onclick="hapusCacheAplikasi()" style="width: 100%; padding: 8px; background: #e74c3c; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 11px;">
-        🗑️ HAPUS CACHE & REFRESH</button></div>
-            <button class="btn-save" onclick="saveSettings()">SIMPAN</button>
+                <span style="font-size: 10px; opacity: 0.7;">Bersihkan cache jika aplikasi tidak update.</span>
+                <button onclick="hapusCacheAplikasi()" style="width: 100%; padding: 8px; background: #e74c3c; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 11px;">
+                    🗑️ HAPUS CACHE & REFRESH
+                </button>
             </div>
+
+            <a href="https://azzahrolocare.github.io/rekapitulasi-presensi-siswa/" target="_blank" class="btn-database-trigger" id="btn-rekap">REKAPITULASI PRESENSI</a>
+            <div class="btn-about-trigger" onclick="showAbout()">ⓘ Tentang Aplikasi</div>
+            <button class="btn-save" onclick="saveSettings()">SIMPAN</button>
+        </div>
 
         <div id="about-pop-up">
             <h3 style="margin-top:0; font-size: 18px;">Tentang Aplikasi</h3>
-            <p style="font-size:12px; line-height:1.6; text-align: left; opacity: 0.9;">"Aplikasi Presensi Digital SMP Islam & SMK Az-Zahro hadir sebagai solusi inovatif dalam mendukung digitalisasi pendidikan serta efisiensi administrasi sekolah.<br><br>Dengan fokus mentransformasi presensi konvensional menjadi sistem otomatis berbasis QR Code, aplikasi ini memastikan pendataan kehadiran berjalan cepat dan akurat.<br><br>Melalui integrasi langsung dengan cloud storage, seluruh data tersinkronisasi secara otomatis tanpa perlu rekapitulasi manual di akhir hari."</p>
-            <div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:10px; font-size:11px; text-align:left; border-left: 3px solid var(--primary);">
-                <div style="text-align: center; font-size:13px; font-weight: bold; color: var(--primary);">IT DIGITALIZATION</div>
-                <div style="text-align: center; font-weight: bold; text-decoration: underline; margin-bottom: 15px; font-size: 10px; color: var(--text-main);">SMP ISLAM AZ-ZAHRO & SMK AZ-ZAHRO</div>
-                <p style="margin: 5px 0;"><strong>Created by ops:</strong> Rahmattullah</p>
-                <p style="margin: 5px 0;"><strong>Email:</strong> mas.rahmat.id@gmail.com</p>
-            </div>
+            <p style="font-size:12px; line-height:1.6; text-align: left; opacity: 0.9;">Aplikasi Presensi Digital Az-Zahro hadir sebagai solusi inovatif dalam mendukung digitalisasi pendidikan.</p>
             <button class="btn-save" style="margin-top:15px; padding:10px;" onclick="closeAbout()">TUTUP</button>
         </div>
     </div>
 
     <div id="pwa-popup" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 9999; align-items: center; justify-content: center;">
-    <div style="background: var(--bg-card); width: 85%; max-width: 320px; padding: 25px; border-radius: 20px; border: 2px solid var(--primary); text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.5);">
-        <img src="icon-apk-presensi-azzahro.png" style="width: 80px; height: 80px; margin-bottom: 15px; border-radius: 15px;">
-        <h3 style="margin: 0 0 10px 0; font-size: 1.1rem; color: var(--text-main);">Instal Aplikasi</h3>
-        <p style="font-size: 0.9rem; color: #ccc; margin-bottom: 20px;">Pasang Aplikasi Presensi Digital Az-Zahro di layar utama Anda untuk akses lebih cepat.</p>
-        
-        <div style="display: flex; gap: 10px;">
-            <button id="btnBatal" style="flex: 1; background: transparent; color: #999; border: 1px solid #444; padding: 10px; border-radius: 10px; font-weight: bold; cursor: pointer;">Nanti</button>
-            <button id="btnInstalPop" style="flex: 1; background: var(--primary); color: white; border: none; padding: 10px; border-radius: 10px; font-weight: bold; cursor: pointer;">Instal</button>
+        <div style="background: var(--bg-card); width: 85%; max-width: 320px; padding: 25px; border-radius: 20px; border: 2px solid var(--primary); text-align: center;">
+            <img src="icon-apk-presensi-azzahro.png" style="width: 80px; height: 80px; margin-bottom: 15px; border-radius: 15px;">
+            <h3 style="margin: 0; color: var(--text-main);">Instal Aplikasi</h3>
+            <p style="font-size: 0.9rem; color: #ccc; margin-bottom: 20px;">Pasang di layar utama untuk akses lebih cepat.</p>
+            <div style="display: flex; gap: 10px;">
+                <button id="btnBatal" style="flex: 1; background: transparent; color: #999; border: 1px solid #444; padding: 10px; border-radius: 10px; cursor: pointer;">Nanti</button>
+                <button id="btnInstalPop" style="flex: 1; background: var(--primary); color: white; border: none; padding: 10px; border-radius: 10px; font-weight: bold; cursor: pointer;">Instal</button>
+            </div>
         </div>
     </div>
-</div>
- 
+
     <script>
         const dbName = "PresensiOfflineDB";
         let db;
+        const scriptURL = 'https://script.google.com/macros/s/AKfycbwCXbDTuaFkN7GlcXJxaFgDaKPEp2G9vySF1IKfWxUCTuEOCYt39nMmlEmI25pz4PSd/exec';
+        const rawURL = '';
+        let isProcessing = false;
+        let detectedBarcodes = new Set();
+        let scanTimer = null;
+
+        // BUKA DATABASE
         const requestDB = indexedDB.open(dbName, 1);
         requestDB.onupgradeneeded = (e) => {
             db = e.target.result;
@@ -436,21 +417,6 @@
             updateJumlahAntreanBadge();
         };
 
-        function toggleFullscreen() {
-            if (!document.fullscreenElement) {
-                document.documentElement.requestFullscreen().catch(err => console.log(err));
-                document.getElementById('fullscreen-info').style.display = 'none';
-            }
-        }
-
-        const scriptURL = 'https://script.google.com/macros/s/AKfycbwCXbDTuaFkN7GlcXJxaFgDaKPEp2G9vySF1IKfWxUCTuEOCYt39nMmlEmI25pz4PSd/exec';
-        //Pemanggil file gambar dan audio 'URL'
-        const rawURL = '';
-       //------------------------------
-        let isProcessing = false;
-        let detectedBarcodes = new Set();
-        let scanTimer = null;
-
         function updateClock() {
             const now = new Date();
             const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
@@ -459,21 +425,46 @@
         }
         setInterval(updateClock, 1000); updateClock();
 
-        function showAbout() {
-            document.getElementById('about-pop-up').style.display = 'block';
-            document.getElementById('about-overlay').style.display = 'block';
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(() => {});
+                document.getElementById('fullscreen-info').style.display = 'none';
+            }
         }
 
-        function closeAbout() {
-            document.getElementById('about-pop-up').style.display = 'none';
-            document.getElementById('about-overlay').style.display = 'none';
+        function showAbout() { document.getElementById('about-pop-up').style.display = 'block'; document.getElementById('about-overlay').style.display = 'block'; }
+        function closeAbout() { document.getElementById('about-pop-up').style.display = 'none'; document.getElementById('about-overlay').style.display = 'none'; }
+
+        function previewLayout() {
+            const useGrad = document.getElementById('gradient-toggle').checked;
+            const primary = document.getElementById('color-picker').value;
+            const bgSolid = document.getElementById('color-bg').value;
+            const textColor = document.getElementById('color-text').value;
+
+            document.documentElement.style.setProperty('--text-main', textColor);
+            document.documentElement.style.setProperty('--primary', primary);
+            document.documentElement.style.setProperty('--logo-size', document.getElementById('range-logo').value + 'px');
+            document.documentElement.style.setProperty('--header-font-size', document.getElementById('range-font').value + 'rem');
+            
+            if (useGrad) {
+                document.getElementById('gradient-controls').style.display = 'block';
+                const g1 = document.getElementById('grad-1').value;
+                const g2 = document.getElementById('grad-2').value;
+                const g3 = document.getElementById('grad-3').value;
+                document.documentElement.style.setProperty('--bg-gradient', `linear-gradient(180deg, ${g1} 0%, ${g2} 50%, ${g3} 100%)`);
+            } else {
+                document.getElementById('gradient-controls').style.display = 'none';
+                document.documentElement.style.setProperty('--bg-body', bgSolid);
+                document.documentElement.style.setProperty('--bg-gradient', 'none');
+            }
+            document.body.setAttribute('data-theme', document.getElementById('theme-toggle').checked ? 'light' : 'dark');
         }
 
         function applySettings() {
             const config = JSON.parse(localStorage.getItem('absensiConfig')) || {
                 sound: 'notification/Notif01.mp3', theme: 'dark', primary: '#2ecc71',
                 logoSize: '65', fontSize: '0.9', textColor: '#ffffff', bgColor: '#121212',
-                useGrad: false, g1: '#121212', g2: '#1e1e1e', g3: '#000000', gDir: '180deg'
+                useGrad: false, g1: '#121212', g2: '#1e1e1e', g3: '#000000'
             };
             document.getElementById('sound-choice').value = config.sound;
             document.getElementById('color-picker').value = config.primary;
@@ -486,37 +477,7 @@
             document.getElementById('grad-1').value = config.g1;
             document.getElementById('grad-2').value = config.g2;
             document.getElementById('grad-3').value = config.g3;
-            document.getElementById('grad-dir').value = config.gDir;
             previewLayout();
-        }
-
-        function previewLayout() {
-            const useGrad = document.getElementById('gradient-toggle').checked;
-            const primary = document.getElementById('color-picker').value;
-            const bgSolid = document.getElementById('color-bg').value;
-            const textColor = document.getElementById('color-text').value;
-            const gradSection = document.getElementById('gradient-controls');
-
-            document.documentElement.style.setProperty('--text-main', textColor);
-            document.documentElement.style.setProperty('--primary', primary);
-            document.documentElement.style.setProperty('--logo-size', document.getElementById('range-logo').value + 'px');
-            document.documentElement.style.setProperty('--header-font-size', document.getElementById('range-font').value + 'rem');
-            
-            if (useGrad) {
-                gradSection.style.display = 'block';
-                const g1 = document.getElementById('grad-1').value;
-                const g2 = document.getElementById('grad-2').value;
-                const g3 = document.getElementById('grad-3').value;
-                const gDir = document.getElementById('grad-dir').value;
-                document.documentElement.style.setProperty('--bg-gradient', `linear-gradient(${gDir}, ${g1} 0%, ${g2} 50%, ${g3} 100%)`);
-                document.getElementById('btn-rekap').style.background = `linear-gradient(45deg, ${primary}, ${g2})`;
-            } else {
-                gradSection.style.display = 'none';
-                document.documentElement.style.setProperty('--bg-body', bgSolid);
-                document.documentElement.style.setProperty('--bg-gradient', 'none');
-                document.getElementById('btn-rekap').style.background = primary;
-            }
-            document.body.setAttribute('data-theme', document.getElementById('theme-toggle').checked ? 'light' : 'dark');
         }
 
         function toggleSettings() {
@@ -538,36 +499,22 @@
                 useGrad: document.getElementById('gradient-toggle').checked,
                 g1: document.getElementById('grad-1').value,
                 g2: document.getElementById('grad-2').value,
-                g3: document.getElementById('grad-3').value,
-                gDir: document.getElementById('grad-dir').value
+                g3: document.getElementById('grad-3').value
             };
             localStorage.setItem('absensiConfig', JSON.stringify(config));
             new Audio(rawURL + config.sound).play().catch(() => {});
             toggleSettings();
         }
 
-// --- TARUK KODE NOMOR 2 DI SINI ---
-async function hapusCacheAplikasi() {
-    if (confirm("Apakah Anda yakin ingin menghapus cache? Aplikasi akan memuat ulang setelah ini.")) {
-        try {
-            const cacheNames = await caches.keys();
-            await Promise.all(
-                cacheNames.map(cacheName => caches.delete(cacheName))
-            );
-            const registrations = await navigator.serviceWorker.getRegistrations();
-            for (let registration of registrations) {
-                await registration.unregister();
-            }
-            updateStatusUI("♻ CACHE DIBERSIHKAN! MEMUAT ULANG...", "#3498db");
-            setTimeout(() => {
+        async function hapusCacheAplikasi() {
+            if (confirm("Hapus cache dan muat ulang aplikasi?")) {
+                const names = await caches.keys();
+                await Promise.all(names.map(name => caches.delete(name)));
+                const regs = await navigator.serviceWorker.getRegistrations();
+                for (let r of regs) await r.unregister();
                 window.location.reload(true);
-            }, 1500);
-        } catch (error) {
-            console.error("Gagal menghapus cache:", error);
-            updateStatusUI("✖ GAGAL MENGHAPUS CACHE", "#e74c3c");
+            }
         }
-    }
-}
 
         function updateStatusUI(pesan, warna) {
             const s = document.getElementById('status-kirim');
@@ -583,142 +530,80 @@ async function hapusCacheAplikasi() {
 
         function updateJumlahAntreanBadge() {
             if (!db) return;
-            const transaction = db.transaction(["antrean"], "readonly");
-            const store = transaction.objectStore("antrean");
+            const store = db.transaction(["antrean"], "readonly").objectStore("antrean");
             const req = store.count();
             req.onsuccess = () => {
                 const jml = req.result;
-                const btn = document.getElementById('btn-float-offline');
                 document.getElementById('label-jumlah-antrean').innerText = jml;
-                if (jml > 0) btn.classList.add('ada-data');
-                else btn.classList.remove('ada-data');
+                const btn = document.getElementById('btn-float-offline');
+                if (jml > 0) btn.classList.add('ada-data'); else btn.classList.remove('ada-data');
             };
         }
-        //Mengirim data offline
+
         function bukaModalAntrean(e) {
             if(e) e.stopPropagation();
             const modal = document.getElementById('modal-antrean');
             const container = document.getElementById('daftar-item-antrean');
-            document.getElementById('prog-cont').style.display = 'none';
-            document.getElementById('loading-text').style.display = 'none';
-            container.innerHTML = "<p style='text-align:center;'>Memuat data...</p>";
             modal.style.display = 'flex';
-            const transaction = db.transaction(["antrean"], "readonly");
-            const store = transaction.objectStore("antrean");
-            const req = store.getAll();
-            req.onsuccess = function() {
+            const req = db.transaction(["antrean"], "readonly").objectStore("antrean").getAll();
+            req.onsuccess = () => {
                 const items = req.result;
                 if (items.length === 0) {
-                    container.innerHTML = "<p style='color:#999; text-align:center;'>Tidak ada data offline.</p>";
+                    container.innerHTML = "<p style='text-align:center; opacity:0.5;'>Antrean kosong.</p>";
                     document.getElementById('btn-kirim-manual').disabled = true;
-                    document.getElementById('btn-kirim-manual').style.opacity = "0.5";
-                    return;
+                } else {
+                    document.getElementById('btn-kirim-manual').disabled = false;
+                    container.innerHTML = items.map(i => `<div style="background:rgba(255,255,255,0.05); padding:8px; border-radius:8px; margin-bottom:5px; border-left:4px solid orange;"><strong>${i.nama}</strong> (${i.keterangan})</div>`).join('');
                 }
-                const btnKirim = document.getElementById('btn-kirim-manual');
-                const textBtn = document.getElementById('text-btn-kirim');
-                btnKirim.disabled = false;
-                btnKirim.style.opacity = "1";
-                btnKirim.style.background = "var(--primary)";
-                textBtn.innerText = "KIRIM";
-                textBtn.classList.remove('loading-dots');
-
-                container.innerHTML = items.map(item => `
-                    <div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:10px; margin-bottom:8px; border-left:4px solid #f39c12;">
-                        <strong style="font-size:14px;">${item.nama}</strong><br>
-                        <small style="color:#aaa;">Keterangan: ${item.keterangan}</small>
-                    </div>
-                `).join('');
             };
         }
 
-        function tutupModalAntrean() {
-            document.getElementById('modal-antrean').style.display = 'none';
-        }
+        function tutupModalAntrean() { document.getElementById('modal-antrean').style.display = 'none'; }
 
         async function kirimManual() {
             if (!navigator.onLine) {
-                updateStatusUI("ⓘ ANDA SEDANG OFFLINE!\nSILAKAN HUBUNGKAN KE INTERNET TERLEBIH DAHULU", "#e67e22");
+                updateStatusUI("OFFLINE! Hubungkan internet.", "#e67e22");
                 return;
             }
-
             const btnKirim = document.getElementById('btn-kirim-manual');
             const textBtn = document.getElementById('text-btn-kirim');
-            const btnTutup = document.getElementById('btn-tutup-antrean');
             const progCont = document.getElementById('prog-cont');
             const progBar = document.getElementById('prog-bar');
-            const loadText = document.getElementById('loading-text');
-            const totalText = document.getElementById('total-send');
-            const currentText = document.getElementById('current-send');
-
+            
             btnKirim.disabled = true;
-            btnKirim.style.opacity = "0.6";
-            btnKirim.style.background = "#555";
-            
-            // AKTIFKAN ANIMASI ELLIPSIS (5 TITIK)
-            textBtn.innerText = "MENGIRIM";
             textBtn.classList.add('loading-dots');
-            
-            btnTutup.disabled = true;
+            progCont.style.display = 'block';
+            document.getElementById('loading-text').style.display = 'block';
 
-            const transaction = db.transaction(["antrean"], "readwrite");
-            const store = transaction.objectStore("antrean");
-            const req = store.getAll();
+            const items = await new Promise(r => {
+                db.transaction(["antrean"]).objectStore("antrean").getAll().onsuccess = e => r(e.target.result);
+            });
 
-            req.onsuccess = async () => {
-                const dataAntrean = req.result;
-                if (dataAntrean.length === 0) {
-                    btnKirim.disabled = false;
-                    btnTutup.disabled = false;
-                    return;
-                }
+            document.getElementById('total-send').innerText = items.length;
 
-                progCont.style.display = 'block';
-                loadText.style.display = 'block';
-                totalText.innerText = dataAntrean.length;
+            for (let i = 0; i < items.length; i++) {
+                document.getElementById('current-send').innerText = i + 1;
+                progBar.style.width = ((i + 1) / items.length * 100) + "%";
+                await fetch(`${scriptURL}?nama=${encodeURIComponent(items[i].nama)}&keterangan=${encodeURIComponent(items[i].keterangan)}`, { method: 'GET', mode: 'no-cors' });
+                db.transaction(["antrean"], "readwrite").objectStore("antrean").delete(items[i].id);
+                await new Promise(r => setTimeout(r, 200));
+            }
 
-                for (let i = 0; i < dataAntrean.length; i++) {
-                    const item = dataAntrean[i];
-                    currentText.innerText = i + 1;
-                    const persen = ((i + 1) / dataAntrean.length) * 100;
-                    progBar.style.width = persen + "%";
-
-                    await fetch(`${scriptURL}?nama=${encodeURIComponent(item.nama)}&keterangan=${encodeURIComponent(item.keterangan)}`, { 
-                        method: 'GET', 
-                        mode: 'no-cors' 
-                    });
-
-                    const deleteTx = db.transaction(["antrean"], "readwrite");
-                    deleteTx.objectStore("antrean").delete(item.id);
-                    await new Promise(r => setTimeout(r, 100));
-                }
-
-                // --- FITUR BARU: NOTIFIKASI SUARA SELESAI ---
-        const config = JSON.parse(localStorage.getItem('absensiConfig')) || { sound: 'notification/Notif01.mp3' };
-        // Memutar suara 'Done.mp3' atau suara sukses lainnya saat antrean habis
-        const audioDone = new Audio(rawURL + 'notification/succes-data-offline.mp3'); 
-        audioDone.play().catch(e => console.log("Gagal memutar notifikasi suara:", e));
-        // --------------------------------------------
-                
-                updateJumlahAntreanBadge();
-                updateStatusUI("✔ SEMUA DATA BERHASIL TERKIRIM!", "var(--primary)");
-                //TOMBOL KIRIM PADAM
-                setTimeout(() => {
-                    tutupModalAntrean();
-                    btnKirim.disabled = false;
-                    btnTutup.disabled = false;
-                    btnKirim.style.opacity = "1";
-                    btnKirim.style.background = "var(--primary)";
-                    textBtn.innerText = "KIRIM";
-                    textBtn.classList.remove('loading-dots');
-                }, 1500);
-            };
+            updateJumlahAntreanBadge();
+            updateStatusUI("✔ SEMUA DATA TERKIRIM!", "var(--primary)");
+            setTimeout(() => {
+                tutupModalAntrean();
+                textBtn.classList.remove('loading-dots');
+                progCont.style.display = 'none';
+            }, 1000);
         }
 
         function sendPresence(nama) {
-            const ketValue = document.getElementById('keterangan').value;
-            if (!ketValue) {
-                updateStatusUI("✖ PILIH KETERANGAN DULU!", "#e74c3c");
+            const ket = document.getElementById('keterangan').value;
+            if (!ket) {
+                updateStatusUI("✖ PILIH KETERANGAN!", "#e74c3c");
                 isProcessing = false;
+                detectedBarcodes.clear();
                 document.getElementById('selection-overlay').style.display = 'none';
                 return;
             }
@@ -726,113 +611,59 @@ async function hapusCacheAplikasi() {
             document.getElementById('last-name-display').value = nama;
             const config = JSON.parse(localStorage.getItem('absensiConfig')) || { sound: 'notification/Notif01.mp3' };
             new Audio(rawURL + config.sound).play().catch(() => {});
-            
-            const dataPresensi = { nama: nama, keterangan: ketValue };
 
             if (navigator.onLine) {
                 updateStatusUI("✔ TERKIRIM: " + nama, "var(--primary)");
-                fetch(`${scriptURL}?nama=${encodeURIComponent(nama)}&keterangan=${encodeURIComponent(ketValue)}`, { 
-                    method: 'GET', 
-                    mode: 'no-cors',
-                    cache: 'no-store'
-                });
+                fetch(`${scriptURL}?nama=${encodeURIComponent(nama)}&keterangan=${encodeURIComponent(ket)}`, { method: 'GET', mode: 'no-cors' });
             } else {
-                simpanKeOffline(dataPresensi);
+                const tx = db.transaction(["antrean"], "readwrite");
+                tx.objectStore("antrean").add({ nama: nama, keterangan: ket });
+                tx.oncomplete = () => {
+                    updateJumlahAntreanBadge();
+                    updateStatusUI("☁ OFFLINE: " + nama, "#f39c12");
+                };
             }
-            
             document.getElementById('selection-overlay').style.display = 'none';
         }
-
-        function simpanKeOffline(data) {
-            if (!db) return;
-            const config = JSON.parse(localStorage.getItem('absensiConfig')) || { sound: 'notification/Notif01.mp3' };
-            new Audio(rawURL + config.sound).play().catch(err => console.log("Gagal putar suara:", err));
-            const transaction = db.transaction(["antrean"], "readwrite");
-            const store = transaction.objectStore("antrean");
-            store.add(data);
-            transaction.oncomplete = () => {
-                updateJumlahAntreanBadge();
-                updateStatusUI("☁ OFFLINE: " + data.nama + "\nDATA TERSIMPAN DI ANTREAN", "#f39c12");
-            };
-        }
-
-        async function sinkronkanData() {
-            if (!db || !navigator.onLine) return;
-            const transaction = db.transaction(["antrean"], "readonly");
-            const store = transaction.objectStore("antrean");
-            const req = store.count();
-            req.onsuccess = () => {
-                if (req.result > 0) {
-                    updateStatusUI("ⓘ ADA DATA OFFLINE!\nSILAKAN KIRIM DARI MENU ANTREAN", "#f39c12");
-                }
-            };
-        }
-
-        window.addEventListener('online', sinkronkanData);
-        applySettings();
-        const html5QrCode = new Html5Qrcode("reader");
 
         function handleScan(decodedText) {
             if (isProcessing) return;
             detectedBarcodes.add(decodedText.trim());
             if (scanTimer) clearTimeout(scanTimer);
             scanTimer = setTimeout(() => {
-                const results = Array.from(detectedBarcodes);
-                if (results.length > 1) {
+                const res = Array.from(detectedBarcodes);
+                if (res.length > 1) {
                     isProcessing = true;
-                    const overlay = document.getElementById('selection-overlay');
-                    overlay.innerHTML = '<p style="color:white; font-size:12px; font-weight:bold; margin-bottom:10px;">TERDETEKSI ' + results.length + ' BARCODE. PILIH NAMA:</p>';
-                    results.forEach(nama => {
-                        const btn = document.createElement('div');
-                        btn.className = 'barcode-option';
-                        btn.innerText = nama;
-                        btn.onclick = (e) => { e.stopPropagation(); sendPresence(nama); };
-                        overlay.appendChild(btn);
+                    const div = document.getElementById('selection-overlay');
+                    div.innerHTML = '<p style="color:white; font-size:12px; font-weight:bold;">PILIH NAMA:</p>';
+                    res.forEach(n => {
+                        const b = document.createElement('div');
+                        b.className = 'barcode-option';
+                        b.innerText = n;
+                        b.onclick = () => sendPresence(n);
+                        div.appendChild(b);
                     });
-                    const btnBatal = document.createElement('div');
-                    btnBatal.className = 'barcode-option';
-                    btnBatal.style.background = '#7f8c8d';
-                    btnBatal.innerText = 'BATAL SCAN ULANG';
-                    btnBatal.onclick = (e) => { 
-                        e.stopPropagation();
-                        overlay.style.display = 'none'; 
-                        isProcessing = false; 
-                        detectedBarcodes.clear();
-                    };
-                    overlay.appendChild(btnBatal);
-                    overlay.style.display = 'flex';
-                } else if (results.length === 1) {
+                    div.style.display = 'flex';
+                } else if (res.length === 1) {
                     isProcessing = true;
-                    sendPresence(results[0]);
+                    sendPresence(res[0]);
                 }
             }, 300);
         }
 
-        html5QrCode.start(
-            { facingMode: "environment" }, 
-            { fps: 20, qrbox: { width: 280, height: 280 } },
-            handleScan
-        ).catch(err => console.error(err));
+        const html5QrCode = new Html5Qrcode("reader");
+        html5QrCode.start({ facingMode: "environment" }, { fps: 20, qrbox: 280 }, handleScan).catch(() => {});
 
-        let promptInstalasi;
-        const popUp = document.getElementById('pwa-popup');
+        applySettings();
+
+        // PWA PROMPT
+        let promptI;
         window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            promptInstalasi = e;
-            setTimeout(() => { popUp.style.display = 'flex'; }, 2000);
+            e.preventDefault(); promptI = e;
+            setTimeout(() => document.getElementById('pwa-popup').style.display = 'flex', 3000);
         });
-        document.getElementById('btnInstalPop').addEventListener('click', async () => {
-            if (!promptInstalasi) return;
-            popUp.style.display = 'none';
-            promptInstalasi.prompt();
-            promptInstalasi = null;
-        });
-        document.getElementById('btnBatal').addEventListener('click', () => { popUp.style.display = 'none'; });
-    </script>
-    <script>
-      if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('./sw.js').then(() => console.log("SW Aktif!"));
-      }
+        document.getElementById('btnInstalPop').onclick = () => { promptI.prompt(); document.getElementById('pwa-popup').style.display = 'none'; };
+        document.getElementById('btnBatal').onclick = () => document.getElementById('pwa-popup').style.display = 'none';
     </script>
 </body>
 </html>
